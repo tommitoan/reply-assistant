@@ -191,6 +191,35 @@ describe("startGeneration", () => {
     expect(calls.finished).toHaveLength(0);
   });
 
+  it("retries a refusal from the smart model once with the fast model", async () => {
+    const { repo, calls } = fakeRepo();
+    const seen: StreamReplyParams[] = [];
+    async function* stream(params: StreamReplyParams): AsyncGenerator<StreamPart> {
+      seen.push(params);
+      yield params.tier === "smart"
+        ? finalPart({ text: "", stopReason: "refusal", model: "claude-sonnet-5-5" })
+        : finalPart();
+    }
+    const result = await startGeneration({ ...BODY, speed: "smart" }, deps({ repo, stream }));
+    if (!result.ok) throw new Error("expected a stream");
+    const events = await readEvents(result.stream);
+
+    expect(seen.map((call) => call.model)).toEqual(["claude-sonnet-5-5", "claude-haiku-4-5"]);
+    expect(events.at(-1)).toMatchObject({ t: "done" });
+    expect(calls.failed).toHaveLength(0);
+    expect(calls.finished).toHaveLength(1);
+  });
+
+  it("does not retry a fast-model refusal", async () => {
+    const { repo, calls } = fakeRepo();
+    const { stream, seen } = fakeStream([finalPart({ text: "", stopReason: "refusal" })]);
+    const result = await startGeneration({ ...BODY, speed: "fast" }, deps({ repo, stream }));
+    if (!result.ok) throw new Error("expected a stream");
+    await readEvents(result.stream);
+    expect(seen).toHaveLength(1);
+    expect(calls.failed[0].update.status).toBe("refused");
+  });
+
   it("reports an empty reply as an error", async () => {
     const { repo, calls } = fakeRepo();
     const { stream } = fakeStream([finalPart({ text: "   " })]);

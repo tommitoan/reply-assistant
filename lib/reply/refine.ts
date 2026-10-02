@@ -143,6 +143,7 @@ export async function startRefinement(
     abort,
     generationId,
     route,
+    fallbackRoute: route.tier === "smart" ? { tier: "fast", model: deps.models.fast } : undefined,
     prompt,
     maxOptions: REFINE_OPTION_COUNT,
     // The note the reply was developed with is the note it used.

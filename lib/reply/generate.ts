@@ -374,6 +374,7 @@ export async function startGeneration(
     abort,
     generationId,
     route,
+    fallbackRoute: route.tier === "smart" ? { tier: "fast", model: deps.models.fast } : undefined,
     prompt,
     meta: {
       t: "meta",

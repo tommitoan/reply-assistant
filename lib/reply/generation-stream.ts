@@ -21,6 +21,10 @@ export interface GenerationStreamParams {
   abort: AbortController;
   generationId: string;
   route: Route;
+  // Tried once when the model in `route` refuses before writing anything.
+  // Safety refusals on harmless messages are rare but real, and the writer
+  // would otherwise have to press retry by hand.
+  fallbackRoute?: Route;
   prompt: { system: SystemBlock[]; messages: [UserMessage] };
   meta: MetaEvent;
   // Keeps only the first N options the model wrote; unset keeps them all.
@@ -66,25 +70,47 @@ export function streamGeneration(params: GenerationStreamParams): ReadableStream
         // Runs beside the model call, so the replies are not delayed by it.
         if (params.background) background = params.background(send);
 
-        for await (const part of params.stream({
-          tier: route.tier,
-          model: route.model,
-          system: params.prompt.system,
-          messages: params.prompt.messages,
-          signal: abort.signal,
-        })) {
-          if (part.type === "delta") {
-            if (firstTokenMs === null) firstTokenMs = now() - startedAt;
-            send({ t: "delta", text: part.text });
-          } else {
-            final = part;
+        const runModel = async (attemptRoute: Route) => {
+          let last: Extract<StreamPart, { type: "final" }> | null = null;
+          for await (const part of params.stream({
+            tier: attemptRoute.tier,
+            model: attemptRoute.model,
+            system: params.prompt.system,
+            messages: params.prompt.messages,
+            signal: abort.signal,
+          })) {
+            if (part.type === "delta") {
+              if (firstTokenMs === null) firstTokenMs = now() - startedAt;
+              send({ t: "delta", text: part.text });
+            } else {
+              last = part;
+            }
           }
+          return last;
+        };
+
+        final = await runModel(route);
+        // The refused call is billed too, so its cost is carried into the final one.
+        let refusedCostUsd: number | null = null;
+        if (
+          final?.stopReason === "refusal" &&
+          final.text.trim() === "" &&
+          params.fallbackRoute &&
+          params.fallbackRoute.model !== route.model
+        ) {
+          refusedCostUsd = computeCostUsd(final.model, final.usage) ?? computeCostUsd(route.model, final.usage);
+          console.warn(
+            `[/api/reply/generate] ${route.model} refused request ${generationId}; retrying with ${params.fallbackRoute.model}`,
+          );
+          final = await runModel(params.fallbackRoute);
         }
         if (!final) throw new Error("model stream ended without a final message");
 
         const totalMs = now() - startedAt;
-        const costUsd =
+        const answeredCostUsd =
           computeCostUsd(final.model, final.usage) ?? computeCostUsd(route.model, final.usage);
+        const costUsd =
+          refusedCostUsd === null ? answeredCostUsd : (answeredCostUsd ?? 0) + refusedCostUsd;
         const timing = { firstTokenMs, totalMs, usage: final.usage, costUsd, model: final.model };
 
         if (final.stopReason === "refusal") {
