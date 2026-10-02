@@ -1,4 +1,4 @@
-import { USAGE_KINDS, USAGE_KIND_LABELS, type UsageKind } from "./usage";
+import { USAGE_KIND_LABELS, USAGE_KINDS, type UsageKind } from "./usage";
 
 // How far back each table looks.
 export const DAYS_SHOWN = 30;
@@ -106,7 +106,8 @@ function fill(
   });
 }
 
-const monthName = new Intl.DateTimeFormat("en", { month: "short", year: "numeric", timeZone: "UTC" });
+// "2026-10" -> "Tháng 10/2026"
+const monthLabel = (key: string): string => `Tháng ${Number(key.slice(5))}/${key.slice(0, 4)}`;
 
 export function toUsageView(raw: UsageRaw, now: Date): UsageView {
   const today = dayStart(now);
@@ -124,15 +125,15 @@ export function toUsageView(raw: UsageRaw, now: Date): UsageView {
 
   return {
     totals: raw.totals,
-    days: fill(raw.days, dayKeys, (key) => (key === dayKey(today) ? `${key} (today)` : key)),
-    weeks: fill(raw.weeks, weekKeys, (key) => `Week of ${key}`),
-    months: fill(raw.months, monthKeys, (key) => monthName.format(new Date(`${key}-01T00:00:00Z`))),
+    days: fill(raw.days, dayKeys, (key) => (key === dayKey(today) ? `${key} (hôm nay)` : key)),
+    weeks: fill(raw.weeks, weekKeys, (key) => `Tuần từ ${key}`),
+    months: fill(raw.months, monthKeys, monthLabel),
     kinds,
     conversations: raw.conversations.map((row) => ({
       ...row,
       label: row.conversationId
-        ? row.title?.trim() || "Untitled conversation"
-        : "No thread (quick translate, style profile, warm-up, or a deleted thread)",
+        ? row.title?.trim() || "Cuộc trò chuyện chưa đặt tên"
+        : "Không thuộc cuộc trò chuyện nào (dịch nhanh, hồ sơ phong cách, làm nóng cache, hoặc cuộc trò chuyện đã xóa)",
     })),
     empty: raw.totals.calls === 0,
   };

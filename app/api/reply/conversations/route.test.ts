@@ -16,13 +16,13 @@ describe("POST /api/reply/conversations validation", () => {
   it("rejects a body that is not JSON", async () => {
     const res = await post("{nope");
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "Invalid JSON body." });
+    expect(await res.json()).toEqual({ error: "Dữ liệu gửi lên không hợp lệ." });
   });
 
   it("needs a context", async () => {
     const res = await post(JSON.stringify({ title: "Chat" }));
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toContain("context");
+    expect((await res.json()).error).toBe("Yêu cầu không hợp lệ.");
   });
 
   it("rejects an unknown context and a title that is too long", async () => {

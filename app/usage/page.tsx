@@ -4,7 +4,7 @@ import { getDb } from "@/lib/reply/db";
 import { toUsageView } from "@/lib/reply/usage-report";
 import { createUsageRepo } from "@/lib/reply/usage-repo";
 
-export const metadata: Metadata = { title: "Reply usage — Reply Assistant" };
+export const metadata: Metadata = { title: "Chi phí — Reply Assistant" };
 // The figures change with every request.
 export const dynamic = "force-dynamic";
 
@@ -19,12 +19,12 @@ export default async function ReplyUsagePage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-6 font-serif text-3xl tracking-tight text-stone-900 dark:text-stone-100">Reply usage</h1>
+      <h1 className="mb-6 font-serif text-3xl tracking-tight text-stone-900 dark:text-stone-100">Chi phí</h1>
       {usage ? (
         <UsageView usage={usage} />
       ) : (
         <p role="alert" className="text-sm text-red-600 dark:text-red-400">
-          Could not load the usage. Check the database connection and try again.
+          Không tải được số liệu chi phí. Kiểm tra kết nối cơ sở dữ liệu rồi thử lại.
         </p>
       )}
     </main>

@@ -9,7 +9,7 @@ export const maxDuration = 30;
 
 type Context = { params: Promise<{ id: string }> };
 
-const NOT_FOUND = "That note was not found.";
+const NOT_FOUND = "Không tìm thấy ghi chú này.";
 
 function jsonError(message: string, status: number): Response {
   return Response.json({ error: message }, { status });
@@ -24,7 +24,7 @@ export async function PATCH(req: Request, { params }: Context): Promise<Response
   try {
     payload = await req.json();
   } catch {
-    return jsonError("Invalid JSON body.", 400);
+    return jsonError("Dữ liệu gửi lên không hợp lệ.", 400);
   }
   const parsed = notePatchSchema.safeParse(payload);
   if (!parsed.success) return jsonError(firstIssueMessage(parsed.error), 400);
@@ -34,7 +34,7 @@ export async function PATCH(req: Request, { params }: Context): Promise<Response
     runtime = createNotesRuntime();
   } catch (err) {
     console.error("[/api/reply/notes/[id]]", err);
-    return jsonError("The reply assistant is not configured on this server.", 503);
+    return jsonError("Reply Assistant chưa được cấu hình trên máy chủ này.", 503);
   }
 
   try {
@@ -43,7 +43,7 @@ export async function PATCH(req: Request, { params }: Context): Promise<Response
     return Response.json({ note: result.value });
   } catch (err) {
     console.error("[/api/reply/notes/[id]]", err);
-    return jsonError("Could not save that. Try again.", 500);
+    return jsonError("Không lưu được thay đổi này. Hãy thử lại.", 500);
   }
 }
 
@@ -56,6 +56,6 @@ export async function DELETE(_req: Request, { params }: Context): Promise<Respon
     return removed ? new Response(null, { status: 204 }) : jsonError(NOT_FOUND, 404);
   } catch (err) {
     console.error("[/api/reply/notes/[id]]", err);
-    return jsonError("Could not delete that. Try again.", 500);
+    return jsonError("Không xóa được ghi chú này. Hãy thử lại.", 500);
   }
 }

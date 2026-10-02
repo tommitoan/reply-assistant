@@ -3,7 +3,7 @@
 export default function ExplainBox({ text }: { text: string | null }) {
   return (
     <section
-      aria-label="What they said"
+      aria-label="Họ đang nói gì"
       className="rounded-xl border border-sky-200 bg-sky-50 p-4 dark:border-sky-900 dark:bg-sky-950"
     >
       <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-sky-800 dark:text-sky-300">

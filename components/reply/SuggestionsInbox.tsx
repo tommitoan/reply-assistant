@@ -46,7 +46,7 @@ function Suggestion({
         onChange={(e) => setText(e.target.value)}
         maxLength={MAX_NOTE_CHARS}
         rows={2}
-        aria-label="Suggested note"
+        aria-label="Nội dung ghi chú gợi ý"
         className={FIELD}
       />
       <textarea
@@ -54,18 +54,18 @@ function Suggestion({
         onChange={(e) => setTextEn(e.target.value)}
         maxLength={MAX_NOTE_EN_CHARS}
         rows={2}
-        aria-label="English version of the suggested note"
-        placeholder="English version (written for you when you add it, if empty)"
+        aria-label="Bản tiếng Anh của ghi chú gợi ý"
+        placeholder="Bản tiếng Anh (để trống thì app tự viết khi bạn thêm vào)"
         className={FIELD}
       />
       <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500 dark:text-stone-400">
         <label className="flex items-center gap-1">
-          Use in
+          Dùng khi
           <select
             value={scope}
             onChange={(e) => setScope(e.target.value as NoteScope)}
             disabled={busy}
-            aria-label="Use in"
+            aria-label="Dùng khi"
             className={`${SELECT} !py-0.5 text-xs`}
           >
             {NOTE_SCOPES.map((value) => (
@@ -77,16 +77,16 @@ function Suggestion({
         </label>
         <label className="flex items-center gap-1">
           <input type="checkbox" checked={pinned} disabled={busy} onChange={(e) => setPinned(e.target.checked)} />
-          Pin
+          Ghim
         </label>
-        {note.kind === "event" && <span>event{note.happenedOn ? ` · ${note.happenedOn}` : ""}</span>}
+        {note.kind === "event" && <span>sự kiện{note.happenedOn ? ` · ${note.happenedOn}` : ""}</span>}
       </div>
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={approve} disabled={busy || text.trim().length === 0} className={PRIMARY}>
-          {busy ? "Saving…" : "Add to my notes"}
+          {busy ? "Đang lưu…" : "Thêm vào ghi chú của tôi"}
         </button>
         <button type="button" onClick={() => void run(onDismiss)} disabled={busy} className={SMALL}>
-          Dismiss
+          Bỏ qua
         </button>
       </div>
     </article>
@@ -124,7 +124,7 @@ export default function SuggestionsInbox({ onApproved }: { onApproved: () => voi
         if (approved) onApproved();
         return true;
       } catch (err) {
-        setProblem(err instanceof Error ? err.message : "Could not save that.");
+        setProblem(err instanceof Error ? err.message : "Không lưu được thay đổi này.");
         return false;
       }
     },
@@ -134,13 +134,13 @@ export default function SuggestionsInbox({ onApproved }: { onApproved: () => voi
   if (notes === null || (notes.length === 0 && problem === null)) return null;
 
   return (
-    <section aria-label="Suggested notes" className="space-y-3">
+    <section aria-label="Ghi chú gợi ý" className="space-y-3">
       <div>
         <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-100">
-          💡 Suggested notes ({notes.length})
+          💡 Ghi chú gợi ý ({notes.length})
         </h2>
         <p className="text-xs text-stone-500 dark:text-stone-400">
-          Facts about you that the app noticed in what you typed. Nothing is used in a reply until you add it.
+          Những chi tiết về bạn mà app nhận ra từ những gì bạn đã gõ. Chưa có gì được dùng khi trả lời cho đến khi bạn thêm vào ghi chú.
         </p>
       </div>
       {problem && (

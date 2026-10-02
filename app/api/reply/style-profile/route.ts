@@ -26,7 +26,7 @@ export async function GET(): Promise<Response> {
     return Response.json(await listing(createStyleProfileRepo(getDb())));
   } catch (err) {
     console.error("[/api/reply/style-profile]", err);
-    return jsonError("Could not load the style profiles.", 500);
+    return jsonError("Không tải được các hồ sơ phong cách.", 500);
   }
 }
 
@@ -37,7 +37,7 @@ export async function POST(): Promise<Response> {
     env = getReplyEnv();
   } catch (err) {
     console.error("[/api/reply/style-profile]", err);
-    return jsonError("The reply assistant is not configured on this server.", 503);
+    return jsonError("Reply Assistant chưa được cấu hình trên máy chủ này.", 503);
   }
 
   try {
@@ -70,17 +70,17 @@ export async function PATCH(req: Request): Promise<Response> {
   try {
     payload = await req.json();
   } catch {
-    return jsonError("Invalid JSON body.", 400);
+    return jsonError("Dữ liệu gửi lên không hợp lệ.", 400);
   }
   const parsed = styleProfilePatchSchema.safeParse(payload);
   if (!parsed.success) return jsonError(firstIssueMessage(parsed.error), 400);
 
   try {
     const repo = createStyleProfileRepo(getDb());
-    if (!(await repo.setActive(parsed.data.activeId))) return jsonError("That style profile was not found.", 404);
+    if (!(await repo.setActive(parsed.data.activeId))) return jsonError("Không tìm thấy hồ sơ phong cách này.", 404);
     return Response.json(await listing(repo));
   } catch (err) {
     console.error("[/api/reply/style-profile]", err);
-    return jsonError("Could not save that. Try again.", 500);
+    return jsonError("Không lưu được thay đổi này. Bạn thử lại nhé.", 500);
   }
 }

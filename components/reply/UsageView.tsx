@@ -36,8 +36,8 @@ function PeriodTable({ rows, first }: { rows: UsageSeriesRow[]; first: string })
       <thead>
         <tr>
           <th className={TH}>{first}</th>
-          <th className={`${TH} ${NUM}`}>Cost</th>
-          <th className={`${TH} ${NUM}`}>Calls</th>
+          <th className={`${TH} ${NUM}`}>Chi phí</th>
+          <th className={`${TH} ${NUM}`}>Lượt gọi</th>
           <th className={TH} aria-hidden="true" />
         </tr>
       </thead>
@@ -68,7 +68,7 @@ export default function UsageView({ usage }: { usage: Usage }) {
   if (usage.empty) {
     return (
       <p className="rounded-xl border border-dashed border-stone-300 p-6 text-center text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
-        Nothing has been spent yet. Costs appear here after the first request.
+        Chưa có chi phí nào. Số liệu sẽ hiện ở đây sau yêu cầu đầu tiên.
       </p>
     );
   }
@@ -77,28 +77,28 @@ export default function UsageView({ usage }: { usage: Usage }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Total label="Today" value={formatUsd(totals.today)} hint="since 00:00 UTC" />
-        <Total label="This week" value={formatUsd(totals.week)} hint="since Monday, UTC" />
-        <Total label="This month" value={formatUsd(totals.month)} />
-        <Total label="All time" value={formatUsd(totals.allTime)} hint={`${totals.calls} calls`} />
+        <Total label="Hôm nay" value={formatUsd(totals.today)} hint="tính từ 00:00 UTC" />
+        <Total label="Tuần này" value={formatUsd(totals.week)} hint="tính từ thứ Hai, giờ UTC" />
+        <Total label="Tháng này" value={formatUsd(totals.month)} />
+        <Total label="Tổng cộng" value={formatUsd(totals.allTime)} hint={`${totals.calls} lượt gọi`} />
       </div>
 
       {totals.unpriced > 0 && (
         <p role="note" className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
-          {totals.unpriced} {totals.unpriced === 1 ? "call used" : "calls used"} a model without a known price, so{" "}
-          {totals.unpriced === 1 ? "its" : "their"} cost is missing from these totals.
+          {totals.unpriced} lượt gọi dùng model chưa có giá trong bảng giá, nên chi phí của {totals.unpriced === 1 ? "lượt" : "các lượt"} này
+          chưa được tính vào các tổng ở trên.
         </p>
       )}
 
-      <Section title="By kind of call" note="Where the money goes. This month and all time.">
+      <Section title="Theo loại lượt gọi" note="Tiền đang đi đâu. Tính cho tháng này và tổng cộng.">
         <table className="w-full">
           <thead>
             <tr>
-              <th className={TH}>Kind</th>
-              <th className={`${TH} ${NUM}`}>This month</th>
-              <th className={`${TH} ${NUM}`}>Calls</th>
-              <th className={`${TH} ${NUM}`}>All time</th>
-              <th className={`${TH} ${NUM}`}>Calls</th>
+              <th className={TH}>Loại</th>
+              <th className={`${TH} ${NUM}`}>Tháng này</th>
+              <th className={`${TH} ${NUM}`}>Lượt gọi</th>
+              <th className={`${TH} ${NUM}`}>Tổng cộng</th>
+              <th className={`${TH} ${NUM}`}>Lượt gọi</th>
             </tr>
           </thead>
           <tbody>
@@ -115,14 +115,14 @@ export default function UsageView({ usage }: { usage: Usage }) {
         </table>
       </Section>
 
-      <Section title="By conversation" note="The 20 conversations that cost the most. Deleting a conversation keeps its cost in the totals.">
+      <Section title="Theo cuộc trò chuyện" note="20 cuộc trò chuyện tốn nhiều nhất. Xóa cuộc trò chuyện thì chi phí của nó vẫn nằm trong các tổng.">
         <table className="w-full">
           <thead>
             <tr>
-              <th className={TH}>Conversation</th>
-              <th className={`${TH} ${NUM}`}>Cost</th>
-              <th className={`${TH} ${NUM}`}>Calls</th>
-              <th className={TH}>Last used</th>
+              <th className={TH}>Cuộc trò chuyện</th>
+              <th className={`${TH} ${NUM}`}>Chi phí</th>
+              <th className={`${TH} ${NUM}`}>Lượt gọi</th>
+              <th className={TH}>Dùng lần cuối</th>
             </tr>
           </thead>
           <tbody>
@@ -138,22 +138,22 @@ export default function UsageView({ usage }: { usage: Usage }) {
         </table>
       </Section>
 
-      <Section title="By day" note="The last 30 days (UTC).">
-        <PeriodTable rows={usage.days} first="Day" />
+      <Section title="Theo ngày" note="30 ngày gần nhất (giờ UTC).">
+        <PeriodTable rows={usage.days} first="Ngày" />
       </Section>
 
-      <Section title="By week" note="The last 12 weeks. A week starts on Monday (UTC).">
-        <PeriodTable rows={usage.weeks} first="Week" />
+      <Section title="Theo tuần" note="12 tuần gần nhất. Tuần bắt đầu từ thứ Hai (giờ UTC).">
+        <PeriodTable rows={usage.weeks} first="Tuần" />
       </Section>
 
-      <Section title="By month" note="The last 12 months (UTC).">
-        <PeriodTable rows={usage.months} first="Month" />
+      <Section title="Theo tháng" note="12 tháng gần nhất (giờ UTC).">
+        <PeriodTable rows={usage.months} first="Tháng" />
       </Section>
 
       <p className={NOTE}>
-        Costs are estimates from token counts and a price list kept in the code, not invoices.{" "}
+        Chi phí chỉ là ước tính từ số token và bảng giá lưu trong code, không phải hóa đơn.{" "}
         <Link href="/stats" className="underline">
-          Reply stats
+          Thống kê
         </Link>
       </p>
     </div>

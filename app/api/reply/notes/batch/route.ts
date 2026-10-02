@@ -16,7 +16,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     payload = await req.json();
   } catch {
-    return jsonError("Invalid JSON body.", 400);
+    return jsonError("Dữ liệu gửi lên không hợp lệ.", 400);
   }
   const parsed = noteBatchSchema.safeParse(payload);
   if (!parsed.success) return jsonError(firstIssueMessage(parsed.error), 400);
@@ -26,7 +26,7 @@ export async function POST(req: Request): Promise<Response> {
     runtime = createNotesRuntime();
   } catch (err) {
     console.error("[/api/reply/notes/batch]", err);
-    return jsonError("The reply assistant is not configured on this server.", 503);
+    return jsonError("Reply Assistant chưa được cấu hình trên máy chủ này.", 503);
   }
 
   try {
@@ -35,6 +35,6 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ notes: result.value }, { status: 201 });
   } catch (err) {
     console.error("[/api/reply/notes/batch]", err);
-    return jsonError("Could not save the notes. Try again.", 500);
+    return jsonError("Không lưu được các ghi chú. Hãy thử lại.", 500);
   }
 }

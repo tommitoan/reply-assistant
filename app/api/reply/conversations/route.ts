@@ -18,7 +18,7 @@ export async function GET(req: Request): Promise<Response> {
     return Response.json({ conversations });
   } catch (err) {
     console.error("[/api/reply/conversations]", err);
-    return jsonError("Could not load the conversations.", 500);
+    return jsonError("Không tải được danh sách cuộc trò chuyện.", 500);
   }
 }
 
@@ -27,7 +27,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     payload = await req.json();
   } catch {
-    return jsonError("Invalid JSON body.", 400);
+    return jsonError("Dữ liệu gửi lên không hợp lệ.", 400);
   }
 
   const parsed = conversationCreateSchema.safeParse(payload);
@@ -38,6 +38,6 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ conversation }, { status: 201 });
   } catch (err) {
     console.error("[/api/reply/conversations]", err);
-    return jsonError("Could not start the conversation. Try again.", 500);
+    return jsonError("Không tạo được cuộc trò chuyện. Bạn thử lại nhé.", 500);
   }
 }

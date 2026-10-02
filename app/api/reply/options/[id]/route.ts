@@ -15,13 +15,13 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<Response> {
   const id = optionIdSchema.safeParse((await params).id);
-  if (!id.success) return jsonError("That reply was not found.", 404);
+  if (!id.success) return jsonError("Không tìm thấy bản nháp này.", 404);
 
   let payload: unknown;
   try {
     payload = await req.json();
   } catch {
-    return jsonError("Invalid JSON body.", 400);
+    return jsonError("Dữ liệu gửi lên không hợp lệ.", 400);
   }
 
   const parsed = optionPatchSchema.safeParse(payload);
@@ -29,10 +29,10 @@ export async function PATCH(
 
   try {
     const option = await createReplyRepo(getDb()).updateOption(id.data, parsed.data);
-    if (!option) return jsonError("That reply was not found.", 404);
+    if (!option) return jsonError("Không tìm thấy bản nháp này.", 404);
     return Response.json({ option });
   } catch (err) {
     console.error("[/api/reply/options]", err);
-    return jsonError("Could not save that. Try again.", 500);
+    return jsonError("Không lưu được. Bạn thử lại nhé.", 500);
   }
 }

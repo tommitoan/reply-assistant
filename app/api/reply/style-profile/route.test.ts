@@ -16,7 +16,7 @@ describe("PATCH /api/reply/style-profile validation", () => {
   it("rejects a body that is not JSON", async () => {
     const res = await patch("{nope");
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "Invalid JSON body." });
+    expect(await res.json()).toEqual({ error: "Dữ liệu gửi lên không hợp lệ." });
   });
 
   it("needs activeId, which is a profile id or null", async () => {

@@ -64,9 +64,9 @@ describe("toUsageView", () => {
       ["2026-09-30", 0, 0],
       ["2026-09-29", 0.2, 1],
     ]);
-    expect(view.days[0].label).toBe("2026-10-01 (today)");
-    expect(view.weeks[0]).toMatchObject({ key: "2026-09-28", label: "Week of 2026-09-28" });
-    expect(view.months[0]).toMatchObject({ key: "2026-10", label: "Oct 2026" });
+    expect(view.days[0].label).toBe("2026-10-01 (hôm nay)");
+    expect(view.weeks[0]).toMatchObject({ key: "2026-09-28", label: "Tuần từ 2026-09-28" });
+    expect(view.months[0]).toMatchObject({ key: "2026-10", label: "Tháng 10/2026" });
     expect(view.months[11].key).toBe("2025-11");
   });
 
@@ -86,8 +86,8 @@ describe("toUsageView", () => {
     );
     expect(view.conversations.map((c) => c.label)).toEqual([
       "Sprint planning",
-      "Untitled conversation",
-      "No thread (quick translate, style profile, warm-up, or a deleted thread)",
+      "Cuộc trò chuyện chưa đặt tên",
+      "Không thuộc cuộc trò chuyện nào (dịch nhanh, hồ sơ phong cách, làm nóng cache, hoặc cuộc trò chuyện đã xóa)",
     ]);
   });
 
@@ -104,7 +104,7 @@ describe("toUsageView", () => {
       },
       NOW,
     );
-    expect(view.kinds.map((k) => k.label)).toEqual(["Writing replies", "Thread summaries", "mystery"]);
+    expect(view.kinds.map((k) => k.label)).toEqual(["Viết bản nháp", "Tóm tắt cuộc trò chuyện", "mystery"]);
   });
 
   it("is empty until a call has been recorded", () => {

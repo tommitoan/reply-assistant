@@ -66,11 +66,11 @@ describe("usage kinds", () => {
   it("labels every kind, including developing a reply", () => {
     for (const kind of USAGE_KINDS) expect(USAGE_KIND_LABELS[kind]).toBeTruthy();
     expect(USAGE_KINDS).toContain("refine");
-    expect(USAGE_KIND_LABELS.refine).toBe("Developing replies");
+    expect(USAGE_KIND_LABELS.refine).toBe("Mở rộng bản nháp");
   });
 
   it("says that embeddings serve notes as well as memory, and that the notes kind covers suggestions", () => {
-    expect(USAGE_KIND_LABELS.embedding).toBe("Embeddings (memory and notes)");
-    expect(USAGE_KIND_LABELS.notes).toBe("Personal notes");
+    expect(USAGE_KIND_LABELS.embedding).toBe("Embedding (trí nhớ và ghi chú)");
+    expect(USAGE_KIND_LABELS.notes).toBe("Ghi chú cá nhân");
   });
 });

@@ -473,7 +473,7 @@ describe("reviewSuggestion", () => {
       const h = harness({ seed: [waiting({ status })] });
       for (const decision of ["approve", "dismiss"] as const) {
         const result = await reviewSuggestion(h.deps, "n1", { decision });
-        expect(result).toEqual({ ok: false, status: 404, error: "That suggestion was not found." });
+        expect(result).toEqual({ ok: false, status: 404, error: "Không tìm thấy ghi chú gợi ý này." });
       }
       expect(h.rows.get("n1")?.status).toBe(status);
     }

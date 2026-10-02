@@ -12,19 +12,19 @@ describe("/api/reply/notes validation", () => {
   it("POST rejects a body that is not JSON", async () => {
     const res = await POST(request("POST", "{nope"));
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "Invalid JSON body." });
+    expect(await res.json()).toEqual({ error: "Dữ liệu gửi lên không hợp lệ." });
   });
 
   it("POST rejects an empty note", async () => {
     const res = await POST(request("POST", JSON.stringify({ text: "  " })));
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toContain("Write the note first.");
+    expect((await res.json()).error).toContain("Hãy viết ghi chú trước đã.");
   });
 
   it("POST refuses a private note that is pinned", async () => {
     const res = await POST(request("POST", JSON.stringify({ text: "a", private: true, pinned: true })));
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toContain("cannot be pinned");
+    expect((await res.json()).error).toContain("không thể ghim");
   });
 
   it("POST rejects an impossible date", async () => {

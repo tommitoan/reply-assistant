@@ -31,30 +31,30 @@ describe("UsageView", () => {
     show();
     // The totals come first on the page; some labels are column headers further down.
     const card = (label: string) => screen.getAllByText(label)[0].parentElement;
-    expect(card("Today")).toHaveTextContent("$0.0123");
-    expect(card("This week")).toHaveTextContent("$0.0500");
-    expect(card("This month")).toHaveTextContent("$0.4000");
-    expect(card("All time")).toHaveTextContent("$1.50");
-    expect(card("All time")).toHaveTextContent("42 calls");
+    expect(card("Hôm nay")).toHaveTextContent("$0.0123");
+    expect(card("Tuần này")).toHaveTextContent("$0.0500");
+    expect(card("Tháng này")).toHaveTextContent("$0.4000");
+    expect(card("Tổng cộng")).toHaveTextContent("$1.50");
+    expect(card("Tổng cộng")).toHaveTextContent("42 lượt gọi");
   });
 
   it("breaks the cost down by kind, conversation, day, week and month", () => {
     show();
-    for (const title of ["By kind of call", "By conversation", "By day", "By week", "By month"]) {
+    for (const title of ["Theo loại lượt gọi", "Theo cuộc trò chuyện", "Theo ngày", "Theo tuần", "Theo tháng"]) {
       expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
     }
-    expect(screen.getByText("Writing replies")).toBeInTheDocument();
-    expect(screen.getByText("Explaining their message")).toBeInTheDocument();
+    expect(screen.getByText("Viết bản nháp")).toBeInTheDocument();
+    expect(screen.getByText("Giải thích tin nhắn")).toBeInTheDocument();
     expect(screen.getByText("Sprint planning")).toBeInTheDocument();
-    expect(screen.getByText("No thread (quick translate, style profile, warm-up, or a deleted thread)")).toBeInTheDocument();
-    expect(screen.getByText("2026-10-01 (today)")).toBeInTheDocument();
-    expect(screen.getByText("Week of 2026-09-28")).toBeInTheDocument();
-    expect(screen.getByText("Oct 2026")).toBeInTheDocument();
+    expect(screen.getByText("Không thuộc cuộc trò chuyện nào (dịch nhanh, hồ sơ phong cách, làm nóng cache, hoặc cuộc trò chuyện đã xóa)")).toBeInTheDocument();
+    expect(screen.getByText("2026-10-01 (hôm nay)")).toBeInTheDocument();
+    expect(screen.getByText("Tuần từ 2026-09-28")).toBeInTheDocument();
+    expect(screen.getByText("Tháng 10/2026")).toBeInTheDocument();
   });
 
   it("lists every day of the window, with quiet days as dashes", () => {
     show();
-    const section = screen.getByRole("heading", { name: "By day" }).closest("section");
+    const section = screen.getByRole("heading", { name: "Theo ngày" }).closest("section");
     expect(section).not.toBeNull();
     // 30 days plus the header row.
     expect(within(section as HTMLElement).getAllByRole("row")).toHaveLength(31);
@@ -62,12 +62,12 @@ describe("UsageView", () => {
 
   it("warns when some calls could not be priced", () => {
     show({ ...RAW, totals: { ...RAW.totals, unpriced: 2 } });
-    expect(screen.getByRole("note")).toHaveTextContent("2 calls used a model without a known price");
+    expect(screen.getByRole("note")).toHaveTextContent("2 lượt gọi dùng model chưa có giá");
   });
 
-  it("says nothing has been spent yet when the table is empty", () => {
+  it("says there is no cost yet when the table is empty", () => {
     show({ ...RAW, totals: { ...RAW.totals, calls: 0, allTime: 0 } });
-    expect(screen.getByText(/Nothing has been spent yet/)).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "By day" })).toBeNull();
+    expect(screen.getByText(/Chưa có chi phí nào/)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Theo ngày" })).toBeNull();
   });
 });

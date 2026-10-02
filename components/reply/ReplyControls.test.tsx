@@ -19,9 +19,9 @@ function setup(settings: Partial<ReplySettings> = {}, disabled = false, showExpl
 }
 
 describe("ReplyControls", () => {
-  it("lets Use memory be switched on and off", () => {
+  it("lets the memory switch be switched on and off", () => {
     const onChange = setup({ useMemory: false });
-    const toggle = screen.getByRole("checkbox", { name: "Use memory" });
+    const toggle = screen.getByRole("checkbox", { name: "Dùng trí nhớ" });
     expect(toggle).not.toBeChecked();
     expect(toggle).toBeEnabled();
 
@@ -29,50 +29,50 @@ describe("ReplyControls", () => {
     expect(onChange).toHaveBeenCalledWith({ useMemory: true });
   });
 
-  it("shows the saved Use memory choice", () => {
+  it("shows the saved memory choice", () => {
     setup({ useMemory: true });
-    expect(screen.getByRole("checkbox", { name: "Use memory" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Dùng trí nhớ" })).toBeChecked();
   });
 
-  it("lets Use my notes be switched off and on, independently of memory", () => {
+  it("lets the notes switch be switched off and on, independently of memory", () => {
     const onChange = setup({ useNotes: true, useMemory: false });
-    const toggle = screen.getByRole("checkbox", { name: "Use my notes" });
+    const toggle = screen.getByRole("checkbox", { name: "Dùng ghi chú của tôi" });
     expect(toggle).toBeChecked();
     fireEvent.click(toggle);
     expect(onChange).toHaveBeenCalledWith({ useNotes: false });
-    expect(screen.getByRole("checkbox", { name: "Use memory" })).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Dùng trí nhớ" })).not.toBeChecked();
   });
 
-  it("keeps Learn and Use memory independent", () => {
+  it("keeps learning and memory independent", () => {
     const onChange = setup({ learn: true, useMemory: false });
-    fireEvent.click(screen.getByRole("checkbox", { name: "Learn" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Ghi nhớ để học" }));
     expect(onChange).toHaveBeenCalledWith({ learn: false });
   });
 
   it("changes context and speed", () => {
     const onChange = setup();
-    fireEvent.click(screen.getByRole("button", { name: /casual/i }));
+    fireEvent.click(screen.getByRole("button", { name: /thân mật/i }));
     expect(onChange).toHaveBeenLastCalledWith({ context: "casual" });
-    fireEvent.click(screen.getByRole("button", { name: /smart/i }));
+    fireEvent.click(screen.getByRole("button", { name: /kỹ lưỡng/i }));
     expect(onChange).toHaveBeenLastCalledWith({ speed: "smart" });
   });
 
   it("disables the context and speed buttons while a request runs", () => {
     setup({}, true);
-    expect(screen.getByRole("button", { name: /work/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /fast/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /công việc/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /nhanh/i })).toBeDisabled();
   });
 });
 
 describe("ReplyControls explain toggle", () => {
   it("is hidden unless a message is being pasted", () => {
     setup();
-    expect(screen.queryByRole("checkbox", { name: "Explain in Vietnamese" })).toBeNull();
+    expect(screen.queryByRole("checkbox", { name: "Giải thích bằng tiếng Việt" })).toBeNull();
   });
 
   it("can be switched off and shows the saved choice", () => {
     const onChange = setup({ explain: true }, false, true);
-    const toggle = screen.getByRole("checkbox", { name: "Explain in Vietnamese" });
+    const toggle = screen.getByRole("checkbox", { name: "Giải thích bằng tiếng Việt" });
     expect(toggle).toBeChecked();
     fireEvent.click(toggle);
     expect(onChange).toHaveBeenCalledWith({ explain: false });

@@ -28,14 +28,14 @@ export interface StreamCallbacks {
 }
 
 async function readFailure(res: Response): Promise<string> {
-  if (res.status === 401) return "Your session expired. Reload the page to sign in again.";
+  if (res.status === 401) return "Phiên đăng nhập đã hết hạn. Hãy tải lại trang để đăng nhập lại.";
   try {
     const body = (await res.json()) as { error?: unknown };
     if (typeof body.error === "string") return body.error;
   } catch {
     // Not JSON; fall through to the generic message.
   }
-  return "Could not reach the reply assistant. Try again.";
+  return "Không kết nối được với Reply Assistant. Bạn thử lại nhé.";
 }
 
 function parseEvent(line: string): ReplyStreamEvent | null {
@@ -145,7 +145,7 @@ export function useReplyStream(callbacks: StreamCallbacks = {}): {
       if (!finished) {
         dispatch({
           type: "error",
-          message: "The connection dropped before the replies were finished. Try again.",
+          message: "Kết nối bị ngắt trước khi viết xong các bản nháp. Bạn thử lại nhé.",
           retryable: true,
         });
       }
@@ -154,7 +154,7 @@ export function useReplyStream(callbacks: StreamCallbacks = {}): {
       if (!controller.signal.aborted) {
         dispatch({
           type: "error",
-          message: "Could not reach the reply assistant. Check the connection and try again.",
+          message: "Không kết nối được với Reply Assistant. Hãy kiểm tra kết nối rồi thử lại.",
           retryable: true,
         });
       }

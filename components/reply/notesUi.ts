@@ -14,7 +14,7 @@ export const SELECT =
 export const ERROR =
   "rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400";
 
-export const SCOPE_LABELS: Record<NoteScope, string> = { both: "Work and casual", work: "Work only", casual: "Casual only" };
-export const KIND_LABELS: Record<NoteKind, string> = { fact: "Fact (stays true)", event: "Event (happened once)" };
+export const SCOPE_LABELS: Record<NoteScope, string> = { both: "Công việc và thân mật", work: "Chỉ công việc", casual: "Chỉ thân mật" };
+export const KIND_LABELS: Record<NoteKind, string> = { fact: "Thông tin (luôn đúng)", event: "Sự kiện (xảy ra một lần)" };
 
-export const PRIVATE_HINT = "Private: stays in this app and is never sent to an AI model, so it is never used in a reply.";
+export const PRIVATE_HINT = "Riêng tư: chỉ nằm trong app, không bao giờ gửi cho mô hình AI, nên không bao giờ được dùng khi viết trả lời.";

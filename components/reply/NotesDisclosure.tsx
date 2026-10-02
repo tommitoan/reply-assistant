@@ -36,7 +36,7 @@ export default function NotesDisclosure({
       await updateNote(id, { status: "archived" });
       setArchived((current) => new Set(current).add(id));
     } catch (err) {
-      setProblem(err instanceof Error ? err.message : "Could not archive that note.");
+      setProblem(err instanceof Error ? err.message : "Không lưu trữ được ghi chú này.");
     }
   }
 
@@ -46,8 +46,8 @@ export default function NotesDisclosure({
     return (
       <p className={NOTE}>
         {mode === "en_reply"
-          ? "Your notes could not be searched for this request (embedding limit), so only pinned notes were available."
-          : "Note suggestions were skipped for this request (embedding limit)."}
+          ? "Không tìm kiếm được ghi chú của bạn cho yêu cầu này (hết hạn mức embedding), nên chỉ dùng được các ghi chú đã ghim."
+          : "Đã bỏ qua gợi ý ghi chú cho yêu cầu này (hết hạn mức embedding)."}
       </p>
     );
   }
@@ -58,7 +58,7 @@ export default function NotesDisclosure({
   if (used.length === 0) {
     return notes.offered > 0 ? (
       <p className={NOTE}>
-        {notes.offered} {notes.offered === 1 ? "note was" : "notes were"} available; none fit this message.
+        Có {notes.offered} ghi chú để dùng, nhưng không ghi chú nào hợp với tin nhắn này.
       </p>
     ) : null;
   }
@@ -66,23 +66,23 @@ export default function NotesDisclosure({
   return (
     <details className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-sm dark:border-stone-800 dark:bg-stone-800">
       <summary className="cursor-pointer text-stone-600 dark:text-stone-300">
-        Used {used.length} {used.length === 1 ? "note" : "notes"}
+        Đã dùng {used.length} ghi chú
       </summary>
       <ul className="mt-2 space-y-2">
         {used.map((note) => (
           <li key={note.id} className="flex flex-wrap items-center gap-2 text-stone-500 dark:text-stone-400">
             <span className="flex-1">
-              {note.pinned && <span aria-label="pinned">📌 </span>}
+              {note.pinned && <span aria-label="đã ghim">📌 </span>}
               {note.text}
             </span>
             <button type="button" disabled={disabled} onClick={() => onLeaveOut(note.id)} className={SMALL}>
-              Don’t use this one
+              Đừng dùng ghi chú này
             </button>
             <a href={`/about#note-${note.id}`} className={`${SMALL} inline-block`}>
-              Edit
+              Sửa
             </a>
             <button type="button" disabled={disabled || archived.has(note.id)} onClick={() => void archive(note.id)} className={SMALL}>
-              {archived.has(note.id) ? "Archived ✓" : "Archive"}
+              {archived.has(note.id) ? "Đã lưu trữ ✓" : "Lưu trữ"}
             </button>
           </li>
         ))}

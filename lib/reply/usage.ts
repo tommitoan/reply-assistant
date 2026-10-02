@@ -6,14 +6,14 @@ export const USAGE_KINDS = ["generate", "refine", "explain", "summary", "style_p
 export type UsageKind = (typeof USAGE_KINDS)[number];
 
 export const USAGE_KIND_LABELS: Record<UsageKind, string> = {
-  generate: "Writing replies",
-  refine: "Developing replies",
-  explain: "Explaining their message",
-  summary: "Thread summaries",
-  style_profile: "Style profile",
-  embedding: "Embeddings (memory and notes)",
-  warm: "Cache warm-up",
-  notes: "Personal notes",
+  generate: "Viết bản nháp",
+  refine: "Mở rộng bản nháp",
+  explain: "Giải thích tin nhắn",
+  summary: "Tóm tắt cuộc trò chuyện",
+  style_profile: "Hồ sơ phong cách",
+  embedding: "Embedding (trí nhớ và ghi chú)",
+  warm: "Làm nóng cache",
+  notes: "Ghi chú cá nhân",
 };
 
 export interface UsageEntry {

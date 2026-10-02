@@ -47,23 +47,23 @@ export async function startRefinement(
     return {
       ok: false,
       status: 429,
-      error: "The daily spending limit for replies is reached. It resets at 00:00 UTC.",
+      error: "Đã hết hạn mức chi tiêu trong ngày. Hạn mức được đặt lại lúc 00:00 UTC (7:00 sáng giờ Việt Nam).",
     };
   }
 
   const base = await deps.repo.getRefineBase(optionId);
-  if (!base) return { ok: false, status: 404, error: "That reply was not found." };
+  if (!base) return { ok: false, status: 404, error: "Không tìm thấy bản nháp này." };
   // One level only: a developed version is chosen against its original, and
   // the original's options are what the writer develops.
   if (base.developed) {
-    return { ok: false, status: 400, error: "Develop the original reply, not a developed version of it." };
+    return { ok: false, status: 400, error: "Hãy mở rộng từ bản nháp gốc, không mở rộng từ bản đã mở rộng." };
   }
 
   let thread: { summary: string | null; transcript: string; chars: number; count: number } | null = null;
   if (base.conversationId) {
-    if (!deps.threads) return { ok: false, status: 400, error: "Conversation threads are not available." };
+    if (!deps.threads) return { ok: false, status: 400, error: "Tính năng cuộc trò chuyện hiện chưa dùng được." };
     const conversation = await deps.threads.repo.getConversation(base.conversationId);
-    if (!conversation) return { ok: false, status: 404, error: "That conversation was not found." };
+    if (!conversation) return { ok: false, status: 404, error: "Không tìm thấy cuộc trò chuyện này." };
     const messages = await deps.threads.repo.getMessages(base.conversationId);
     const transcript = buildTranscript(messages);
     thread = {
@@ -78,14 +78,14 @@ export async function startRefinement(
   // reply's context. The detail comes from the stored note, never from the caller.
   let note: UsableNote | null = null;
   if (noteId) {
-    if (!deps.notes) return { ok: false, status: 400, error: "Notes are not available." };
+    if (!deps.notes) return { ok: false, status: 400, error: "Tính năng ghi chú hiện chưa dùng được." };
     try {
       note = await deps.notes.reader.getUsable(noteId, { context: base.context });
     } catch (err) {
       console.error("[/api/reply/generate] could not read the note", err);
-      return { ok: false, status: 500, error: "Could not read that note. Try again." };
+      return { ok: false, status: 500, error: "Không đọc được ghi chú này. Bạn thử lại nhé." };
     }
-    if (!note) return { ok: false, status: 404, error: "That note was not found, or it cannot be used here." };
+    if (!note) return { ok: false, status: 404, error: "Không tìm thấy ghi chú này, hoặc ghi chú không dùng được ở đây." };
   }
 
   const style = styleLookup ? await styleLookup : null;

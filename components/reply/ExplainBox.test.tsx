@@ -7,7 +7,7 @@ afterEach(cleanup);
 describe("ExplainBox", () => {
   it("shows the explanation with its line breaks", () => {
     render(<ExplainBox text={"Dịch: Bạn rảnh không?\n\nÝ và giọng: lịch sự."} />);
-    const region = screen.getByRole("region", { name: "What they said" });
+    const region = screen.getByRole("region", { name: "Họ đang nói gì" });
     expect(region).toHaveTextContent("Dịch: Bạn rảnh không?");
     expect(region).toHaveTextContent("Ý và giọng: lịch sự.");
     expect(screen.getByText(/Dịch:/)).toHaveClass("whitespace-pre-line");

@@ -1,7 +1,7 @@
 import type { NoteCounts, NoteDraft, NoteKind, NoteRecord, NoteScope, NoteSuggestion } from "@/lib/reply/types";
 
 async function errorMessage(res: Response, fallback: string): Promise<string> {
-  if (res.status === 401) return "Your session expired. Reload the page to sign in again.";
+  if (res.status === 401) return "Phiên đăng nhập đã hết hạn. Hãy tải lại trang để đăng nhập lại.";
   try {
     const body = (await res.json()) as { error?: unknown };
     if (typeof body.error === "string") return body.error;
@@ -17,7 +17,7 @@ async function request<T>(url: string, init: RequestInit | undefined, fallback: 
   try {
     res = await fetch(url, init);
   } catch {
-    throw new Error("Could not reach the server. Check the connection and try again.");
+    throw new Error("Không kết nối được tới máy chủ. Kiểm tra mạng rồi thử lại nhé.");
   }
   if (!res.ok) throw new Error(await errorMessage(res, fallback));
   return (res.status === 204 ? undefined : await res.json()) as T;
@@ -46,7 +46,7 @@ export function filterQuery(filters: NoteFilters): string {
 }
 
 export async function listNotes(filters: NoteFilters): Promise<{ notes: NoteRecord[]; counts: NoteCounts }> {
-  return request(`/api/reply/notes?${filterQuery(filters)}`, undefined, "Could not load the notes.");
+  return request(`/api/reply/notes?${filterQuery(filters)}`, undefined, "Không tải được ghi chú.");
 }
 
 // What the form sends for one note. `textEn` left out means "write it for me".
@@ -64,13 +64,13 @@ export async function suggestForNote(text: string): Promise<NoteSuggestion> {
   const body = await request<{ suggestion: NoteSuggestion }>(
     "/api/reply/notes/analyze",
     send("POST", { text }),
-    "Could not suggest an English version.",
+    "Không gợi ý được bản tiếng Anh.",
   );
   return body.suggestion;
 }
 
 export async function createNote(fields: NoteFields): Promise<NoteRecord> {
-  const body = await request<{ note: NoteRecord }>("/api/reply/notes", send("POST", fields), "Could not save the note.");
+  const body = await request<{ note: NoteRecord }>("/api/reply/notes", send("POST", fields), "Không lưu được ghi chú.");
   return body.note;
 }
 
@@ -78,7 +78,7 @@ export async function previewDiary(text: string): Promise<NoteDraft[]> {
   const body = await request<{ drafts: NoteDraft[] }>(
     "/api/reply/notes/import-preview",
     send("POST", { text }),
-    "Could not split the diary.",
+    "Không tách được nhật ký.",
   );
   return body.drafts;
 }
@@ -87,7 +87,7 @@ export async function saveNotes(notes: NoteFields[]): Promise<NoteRecord[]> {
   const body = await request<{ notes: NoteRecord[] }>(
     "/api/reply/notes/batch",
     send("POST", { notes }),
-    "Could not save the notes.",
+    "Không lưu được các ghi chú.",
   );
   return body.notes;
 }
@@ -104,22 +104,22 @@ export interface NoteChanges {
 }
 
 export async function updateNote(id: string, changes: NoteChanges): Promise<NoteRecord> {
-  const body = await request<{ note: NoteRecord }>(`/api/reply/notes/${id}`, send("PATCH", changes), "Could not save that.");
+  const body = await request<{ note: NoteRecord }>(`/api/reply/notes/${id}`, send("PATCH", changes), "Không lưu được thay đổi này.");
   return body.note;
 }
 
 export async function deleteNote(id: string): Promise<void> {
-  await request<void>(`/api/reply/notes/${id}`, { method: "DELETE" }, "Could not delete that.");
+  await request<void>(`/api/reply/notes/${id}`, { method: "DELETE" }, "Không xóa được ghi chú này.");
 }
 
 export async function deleteAllNotes(): Promise<number> {
-  const body = await request<{ deleted: number }>("/api/reply/notes?confirm=all", { method: "DELETE" }, "Could not delete the notes.");
+  const body = await request<{ deleted: number }>("/api/reply/notes?confirm=all", { method: "DELETE" }, "Không xóa được ghi chú.");
   return body.deleted;
 }
 
 // Notes the app proposed from what the writer typed, waiting for a decision.
 export async function listSuggestions(): Promise<NoteRecord[]> {
-  const body = await request<{ notes: NoteRecord[] }>("/api/reply/notes/inbox", undefined, "Could not load the suggestions.");
+  const body = await request<{ notes: NoteRecord[] }>("/api/reply/notes/inbox", undefined, "Không tải được ghi chú gợi ý.");
   return body.notes;
 }
 
@@ -135,7 +135,7 @@ export async function approveSuggestion(id: string, changes: ApprovalChanges): P
   const body = await request<{ note: NoteRecord }>(
     `/api/reply/notes/${id}/review`,
     send("POST", { decision: "approve", changes }),
-    "Could not save that.",
+    "Không lưu được thay đổi này.",
   );
   return body.note;
 }
@@ -144,6 +144,6 @@ export async function dismissSuggestion(id: string): Promise<void> {
   await request<{ note: NoteRecord }>(
     `/api/reply/notes/${id}/review`,
     send("POST", { decision: "dismiss" }),
-    "Could not dismiss that.",
+    "Không bỏ qua được ghi chú gợi ý này.",
   );
 }

@@ -28,7 +28,7 @@ export function useConversationList(): {
         setError(null);
       })
       .catch((err) => {
-        if (!cancelled) setError(messageOf(err, "Could not load the conversations."));
+        if (!cancelled) setError(messageOf(err, "Không tải được danh sách cuộc trò chuyện."));
       });
     return () => {
       cancelled = true;
@@ -60,7 +60,7 @@ export function useConversationDetail(id: string | null): {
         setError(null);
       })
       .catch((err) => {
-        if (!cancelled) setError(messageOf(err, "Could not load the conversation."));
+        if (!cancelled) setError(messageOf(err, "Không tải được cuộc trò chuyện."));
       });
     return () => {
       cancelled = true;

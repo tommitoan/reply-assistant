@@ -19,7 +19,7 @@ describe("PATCH /api/reply/style-profile/[id] validation", () => {
   it("rejects a body that is not JSON", async () => {
     const res = await call(ID, "{nope");
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "Invalid JSON body." });
+    expect(await res.json()).toEqual({ error: "Dữ liệu gửi lên không hợp lệ." });
   });
 
   it("needs a list of text rules", async () => {
@@ -31,7 +31,7 @@ describe("PATCH /api/reply/style-profile/[id] validation", () => {
   it("refuses too many rules and a rule that is too long, with the reason", async () => {
     const many = await call(ID, JSON.stringify({ rules: Array.from({ length: MAX_RULES + 1 }, (_, i) => `r${i}`) }));
     expect(many.status).toBe(400);
-    expect((await many.json()).error).toContain(`at most ${MAX_RULES}`);
+    expect((await many.json()).error).toContain(`tối đa ${MAX_RULES}`);
     const long = await call(ID, JSON.stringify({ rules: ["x".repeat(MAX_RULE_CHARS + 1)] }));
     expect(long.status).toBe(400);
     expect((await long.json()).error).toContain(`${MAX_RULE_CHARS}`);

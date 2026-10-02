@@ -1,22 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import type { ReplyContext } from "@/lib/reply/types";
+import type { RecentGeneration, ReplyContext } from "@/lib/reply/types";
 import { createConversation, deleteConversation, patchConversation } from "./conversationsApi";
+import RecentGenerations from "./RecentGenerations";
 import ReplyComposer from "./ReplyComposer";
 import ThreadList from "./ThreadList";
-import ThreadView from "./ThreadView";
+import { ThreadHeader, ThreadMessages } from "./ThreadView";
 import { useConversationDetail, useConversationList } from "./useConversations";
 import { useReplySettings } from "./useReplySettings";
+import { useSidebarOpen } from "./useSidebarOpen";
 
-// Conversation list on the side (a drawer on small screens), and the chosen
-// thread's transcript above the composer.
+const ICON_BUTTON =
+  "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-200/70 dark:text-stone-400 dark:hover:bg-stone-800";
+
+function narrowScreen(): boolean {
+  return typeof window.matchMedia === "function" && !window.matchMedia("(min-width: 1024px)").matches;
+}
+
+// A side bar (new conversation, Quick translate, saved conversations, recent
+// replies) that can be hidden, and next to it the chat: the open thread's
+// messages and the drafts scroll above an input box that stays at the bottom.
 export default function ReplyWorkspace() {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useSidebarOpen();
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  // A request opened from the Recent list, and the key that reloads that list.
+  const [reviewing, setReviewing] = useState<RecentGeneration | null>(null);
+  const [recentKey, setRecentKey] = useState<string | null>(null);
 
   const [settings] = useReplySettings();
   const list = useConversationList();
@@ -29,8 +42,10 @@ export default function ReplyWorkspace() {
 
   function select(id: string | null) {
     setActiveId(id);
+    setReviewing(null);
     setActionError(null);
-    setDrawerOpen(false);
+    // On a narrow screen the side bar covers the chat, so it gets out of the way.
+    if (narrowScreen()) setSidebarOpen(false);
   }
 
   async function run(action: () => Promise<void>): Promise<void> {
@@ -39,7 +54,7 @@ export default function ReplyWorkspace() {
     try {
       await action();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Something went wrong.");
+      setActionError(err instanceof Error ? err.message : "Có lỗi xảy ra.");
     } finally {
       setBusy(false);
     }
@@ -53,28 +68,48 @@ export default function ReplyWorkspace() {
       await refresh();
       select(created.id);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Could not start the conversation.");
+      setActionError(err instanceof Error ? err.message : "Không tạo được cuộc trò chuyện.");
     } finally {
       setCreating(false);
     }
   }
 
-  const activeTitle = detail ? detail.title || "Untitled conversation" : "Quick translate";
-  const greeting = activeId === null;
+  const ready = activeId === null || detail !== null;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
-      <aside className="space-y-2">
+    <div className="relative flex h-full">
+      {sidebarOpen && (
         <button
           type="button"
-          onClick={() => setDrawerOpen((open) => !open)}
-          aria-expanded={drawerOpen}
-          className="flex w-full items-center justify-between rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 lg:hidden dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200"
-        >
-          <span className="truncate">💬 {activeTitle}</span>
-          <span aria-hidden="true">{drawerOpen ? "▴" : "▾"}</span>
-        </button>
-        <div className={drawerOpen ? "block" : "hidden lg:block"}>
+          tabIndex={-1}
+          aria-hidden="true"
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-30 bg-stone-900/30 lg:hidden"
+        />
+      )}
+
+      <aside
+        id="reply-sidebar"
+        aria-label="Thanh bên"
+        className={`${
+          sidebarOpen ? "flex" : "hidden"
+        } fixed inset-y-0 left-0 z-40 w-72 flex-col border-r border-stone-200/80 bg-stone-50 shadow-xl lg:static lg:z-auto lg:w-64 lg:shrink-0 lg:shadow-none dark:border-stone-800 dark:bg-stone-900`}
+      >
+        <div className="flex items-center justify-end px-2 pt-2">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Ẩn thanh bên"
+            title="Ẩn thanh bên"
+            className={ICON_BUTTON}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <path d="M9 4v16" />
+            </svg>
+          </button>
+        </div>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-3 pb-4 pt-1">
           <ThreadList
             items={list.items}
             error={list.error}
@@ -83,83 +118,105 @@ export default function ReplyWorkspace() {
             onSelect={select}
             onCreate={startConversation}
           />
+          <RecentGenerations
+            scope={activeId ?? "none"}
+            refreshKey={recentKey}
+            activeId={reviewing?.id ?? null}
+            onOpen={(generation) => {
+              setReviewing(generation);
+              if (narrowScreen()) setSidebarOpen(false);
+            }}
+          />
         </div>
       </aside>
 
-      <div className="min-w-0 space-y-5">
-        {greeting && (
-          <div className="pb-2 pt-4 text-center sm:pt-8">
-            <p aria-hidden="true" className="text-3xl text-accent-600 dark:text-accent-500">
-              ✻
+      <section className="flex min-w-0 flex-1 flex-col">
+        <div className="flex shrink-0 items-start gap-2 border-b border-stone-200/60 px-3 py-2 dark:border-stone-800/80">
+          {!sidebarOpen && (
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Hiện thanh bên"
+              aria-controls="reply-sidebar"
+              title="Hiện thanh bên"
+              className={ICON_BUTTON}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <path d="M9 4v16" />
+              </svg>
+            </button>
+          )}
+          {detail ? (
+            <ThreadHeader
+              conversation={detail}
+              busy={busy}
+              error={actionError}
+              onRename={(title) =>
+                run(async () => {
+                  await patchConversation(detail.id, { title });
+                  await refreshAll();
+                })
+              }
+              onArchive={() =>
+                run(async () => {
+                  await patchConversation(detail.id, { archived: true });
+                  select(null);
+                  await refresh();
+                })
+              }
+              onDelete={() =>
+                run(async () => {
+                  await deleteConversation(detail.id);
+                  select(null);
+                  await refresh();
+                })
+              }
+            />
+          ) : (
+            <p className="flex h-8 items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-100">
+              <span aria-hidden="true">⚡</span>
+              Dịch nhanh
             </p>
-            <h1 className="mt-2 font-serif text-3xl tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
-              What would you like to say?
-            </h1>
-            <p className="mx-auto mt-2 max-w-xl text-[15px] text-stone-500 dark:text-stone-400">
-              Type your idea in Vietnamese, or open a conversation to paste an English chat. You get drafts in your own voice;
-              nothing is sent for you.
-            </p>
-          </div>
-        )}
-
-        {!greeting && <h1 className="sr-only">Reply Assistant</h1>}
+          )}
+        </div>
 
         {actionError && !detail && (
           <p
             role="alert"
-            className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400"
+            className="mx-4 mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400"
           >
             {actionError}
           </p>
         )}
-
-        {activeId && !detail && !loadError && <p className="text-sm text-stone-400">Loading the conversation…</p>}
+        {activeId && !detail && !loadError && <p className="p-4 text-sm text-stone-400">Đang tải cuộc trò chuyện…</p>}
         {activeId && loadError && !detail && (
-          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+          <p role="alert" className="p-4 text-sm text-red-600 dark:text-red-400">
             {loadError}
           </p>
         )}
 
-        {detail && (
-          <ThreadView
-            conversation={detail}
-            busy={busy}
-            error={actionError}
-            onRename={(title) =>
-              run(async () => {
-                await patchConversation(detail.id, { title });
-                await refreshAll();
-              })
-            }
-            onArchive={() =>
-              run(async () => {
-                await patchConversation(detail.id, { archived: true });
-                select(null);
-                await refresh();
-              })
-            }
-            onDelete={() =>
-              run(async () => {
-                await deleteConversation(detail.id);
-                select(null);
-                await refresh();
-              })
-            }
-          />
+        {ready && (
+          <div className="min-h-0 flex-1">
+            <ReplyComposer
+              key={activeId ?? "quick"}
+              conversation={detail}
+              transcript={detail ? <ThreadMessages messages={detail.messages} /> : undefined}
+              reviewing={reviewing}
+              onCloseReview={() => setReviewing(null)}
+              onGenerationDone={(generationId) => setRecentKey(generationId)}
+              onThreadChanged={() => void refreshAll()}
+              onContextChange={(context: ReplyContext) =>
+                void run(async () => {
+                  if (!detail) return;
+                  await patchConversation(detail.id, { context });
+                  await refreshAll();
+                })
+              }
+            />
+          </div>
         )}
-
-        <ReplyComposer
-          conversation={detail}
-          onThreadChanged={() => void refreshAll()}
-          onContextChange={(context: ReplyContext) =>
-            void run(async () => {
-              if (!detail) return;
-              await patchConversation(detail.id, { context });
-              await refreshAll();
-            })
-          }
-        />
-      </div>
+      </section>
     </div>
   );
 }

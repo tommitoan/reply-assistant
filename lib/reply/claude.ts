@@ -192,19 +192,19 @@ export interface DescribedError {
 // server log.
 export function describeClaudeError(err: unknown): DescribedError {
   if (err instanceof Anthropic.APIUserAbortError) {
-    return { message: "Cancelled.", retryable: false };
+    return { message: "Đã hủy.", retryable: false };
   }
   if (err instanceof Anthropic.AuthenticationError || err instanceof Anthropic.PermissionDeniedError) {
-    return { message: "The reply assistant has no valid API key.", retryable: false };
+    return { message: "Reply Assistant chưa có API key hợp lệ.", retryable: false };
   }
   if (err instanceof Anthropic.RateLimitError) {
-    return { message: "The model is busy right now. Try again in a moment.", retryable: true };
+    return { message: "Mô hình đang quá tải. Bạn thử lại sau ít phút nhé.", retryable: true };
   }
   if (err instanceof Anthropic.APIConnectionError) {
-    return { message: "Could not reach the model. Check the connection and try again.", retryable: true };
+    return { message: "Không kết nối được với mô hình. Hãy kiểm tra kết nối rồi thử lại.", retryable: true };
   }
   if (err instanceof Anthropic.APIError && typeof err.status === "number" && err.status >= 500) {
-    return { message: "The model had a problem. Try again in a moment.", retryable: true };
+    return { message: "Mô hình đang gặp sự cố. Bạn thử lại sau ít phút nhé.", retryable: true };
   }
-  return { message: "Something went wrong while writing the replies.", retryable: false };
+  return { message: "Có lỗi khi viết các bản nháp.", retryable: false };
 }

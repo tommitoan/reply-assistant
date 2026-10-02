@@ -52,13 +52,13 @@ export function checkEvidence(evidence: ProfileEvidence): EvidenceCheck {
   if (total < MIN_EVIDENCE_TOTAL) {
     return {
       ok: false,
-      message: `Not enough rated or edited replies yet: ${total} of ${MIN_EVIDENCE_TOTAL} needed. Rate some replies 👍/👎 or edit a few, then try again.`,
+      message: `Chưa đủ bản nháp đã sửa hoặc đánh giá: mới có ${total} trên ${MIN_EVIDENCE_TOTAL} cần thiết. Bạn sửa thêm vài bản hoặc bấm 👍/👎 rồi thử lại nhé.`,
     };
   }
   if (positive === 0) {
     return {
       ok: false,
-      message: "Only 👎 ratings so far. Give a few replies 👍 or edit some, so there is something to learn from.",
+      message: "Hiện mới chỉ có đánh giá 👎. Hãy bấm 👍 cho vài bản hoặc sửa vài bản, để app có gì đó mà học.",
     };
   }
   return { ok: true };

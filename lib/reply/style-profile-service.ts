@@ -36,13 +36,13 @@ export async function rebuildStyleProfile(deps: RebuildDeps): Promise<RebuildRes
 
   const last = await deps.repo.latestCreatedAt();
   if (last && now() - last.getTime() < REBUILD_COOLDOWN_MS) {
-    return { ok: false, status: 429, error: "A profile was built a moment ago. Wait a minute and try again." };
+    return { ok: false, status: 429, error: "Bạn vừa tạo một phiên bản xong. Đợi khoảng một phút rồi thử lại nhé." };
   }
   if ((await deps.spentTodayUsd()) >= deps.dailyBudgetUsd) {
     return {
       ok: false,
       status: 429,
-      error: "The daily spending limit for replies is reached. It resets at 00:00 UTC.",
+      error: "Đã chạm mức chi tiêu tối đa trong ngày cho phần viết bản nháp. Mức này được đặt lại lúc 00:00 UTC.",
     };
   }
 
@@ -58,7 +58,7 @@ export async function rebuildStyleProfile(deps: RebuildDeps): Promise<RebuildRes
   });
   const rules = parseRules(completed.text);
   if (rules.length === 0) {
-    return { ok: false, status: 502, error: "The model did not return usable rules. Try again." };
+    return { ok: false, status: 502, error: "Model chưa trả về được quy tắc nào dùng được. Bạn thử lại nhé." };
   }
 
   const profile = await deps.repo.create({
@@ -94,12 +94,12 @@ export type EditRulesResult = { ok: true } | { ok: false; status: 400 | 404 | 40
 export async function editStyleRules(repo: StyleProfileRepo, id: string, rules: string[]): Promise<EditRulesResult> {
   const kept = normalizeRules(rules);
   if (kept.length === 0) {
-    return { ok: false, status: 400, error: "Keep at least one rule. To stop using a profile, switch it off." };
+    return { ok: false, status: 400, error: "Cần giữ lại ít nhất một quy tắc. Muốn ngừng dùng hồ sơ thì hãy tắt nó." };
   }
   const outcome = await repo.updateRules(id, formatRules(kept));
-  if (outcome === "missing") return { ok: false, status: 404, error: "That style profile was not found." };
+  if (outcome === "missing") return { ok: false, status: 404, error: "Không tìm thấy hồ sơ phong cách này." };
   if (outcome === "active") {
-    return { ok: false, status: 409, error: "This version is in use. Switch it off before editing its rules." };
+    return { ok: false, status: 409, error: "Phiên bản này đang được dùng. Hãy tắt nó trước khi sửa quy tắc." };
   }
   return { ok: true };
 }

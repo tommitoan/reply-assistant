@@ -10,7 +10,7 @@ function jsonError(message: string, status: number): Response {
   return Response.json({ error: message }, { status });
 }
 
-const NOT_FOUND = "That conversation was not found.";
+const NOT_FOUND = "Không tìm thấy cuộc trò chuyện này.";
 
 // The thread with all of its messages.
 export async function GET(_req: Request, { params }: Context): Promise<Response> {
@@ -24,7 +24,7 @@ export async function GET(_req: Request, { params }: Context): Promise<Response>
     return Response.json({ conversation: { ...conversation, messages: await repo.getMessages(id.data) } });
   } catch (err) {
     console.error("[/api/reply/conversations/[id]]", err);
-    return jsonError("Could not load the conversation.", 500);
+    return jsonError("Không tải được cuộc trò chuyện.", 500);
   }
 }
 
@@ -37,7 +37,7 @@ export async function PATCH(req: Request, { params }: Context): Promise<Response
   try {
     payload = await req.json();
   } catch {
-    return jsonError("Invalid JSON body.", 400);
+    return jsonError("Dữ liệu gửi lên không hợp lệ.", 400);
   }
 
   const parsed = conversationPatchSchema.safeParse(payload);
@@ -49,7 +49,7 @@ export async function PATCH(req: Request, { params }: Context): Promise<Response
     return Response.json({ conversation });
   } catch (err) {
     console.error("[/api/reply/conversations/[id]]", err);
-    return jsonError("Could not save that. Try again.", 500);
+    return jsonError("Không lưu được. Bạn thử lại nhé.", 500);
   }
 }
 
@@ -63,6 +63,6 @@ export async function DELETE(_req: Request, { params }: Context): Promise<Respon
     return deleted ? new Response(null, { status: 204 }) : jsonError(NOT_FOUND, 404);
   } catch (err) {
     console.error("[/api/reply/conversations/[id]]", err);
-    return jsonError("Could not delete that. Try again.", 500);
+    return jsonError("Không xóa được. Bạn thử lại nhé.", 500);
   }
 }

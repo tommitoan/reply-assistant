@@ -8,13 +8,13 @@ afterEach(() => {
 });
 
 describe("AboutLink", () => {
-  it("points to the About me page and shows how many suggested notes are waiting", async () => {
+  it("points to the About page and shows how many suggested notes are waiting", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ notes: [], count: 3 })));
     render(<AboutLink />);
-    const link = screen.getByRole("link", { name: /About me/ });
+    const link = screen.getByRole("link", { name: /Về tôi/ });
     expect(link).toHaveAttribute("href", "/about");
-    await waitFor(() => expect(link).toHaveTextContent("3 new"));
-    expect(screen.getByLabelText("3 suggested notes waiting")).toBeInTheDocument();
+    await waitFor(() => expect(link).toHaveTextContent("3 mới"));
+    expect(screen.getByLabelText("3 ghi chú gợi ý đang chờ duyệt")).toBeInTheDocument();
   });
 
   it("says nothing when none are waiting, or when the count cannot be read", async () => {
@@ -22,22 +22,22 @@ describe("AboutLink", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<AboutLink />);
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    expect(screen.getByRole("link", { name: "About me" })).not.toHaveTextContent("new");
+    expect(screen.getByRole("link", { name: "Về tôi" })).not.toHaveTextContent("mới");
 
     cleanup();
     vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 500 })));
     render(<AboutLink />);
-    expect(screen.getByRole("link", { name: "About me" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Về tôi" })).toBeInTheDocument();
 
     cleanup();
     vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new Error("offline"))));
     render(<AboutLink />);
-    expect(screen.getByRole("link", { name: "About me" })).not.toHaveTextContent("new");
+    expect(screen.getByRole("link", { name: "Về tôi" })).not.toHaveTextContent("mới");
   });
 
-  it("uses the singular for one note", async () => {
+  it("counts a single waiting note", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ notes: [], count: 1 })));
     render(<AboutLink />);
-    expect(await screen.findByLabelText("1 suggested note waiting")).toBeInTheDocument();
+    expect(await screen.findByLabelText("1 ghi chú gợi ý đang chờ duyệt")).toBeInTheDocument();
   });
 });

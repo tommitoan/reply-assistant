@@ -43,10 +43,10 @@ export default function StatsView({ stats }: { stats: Stats }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          ["Requests", String(stats.totals.requests)],
-          ["Reply cost", usd(stats.totals.costUsd)],
-          ["Edited by you", String(stats.goldExamples)],
-          ["Liked", String(stats.likedExamples)],
+          ["Yêu cầu", String(stats.totals.requests)],
+          ["Chi phí bản nháp", usd(stats.totals.costUsd)],
+          ["Bạn đã sửa", String(stats.goldExamples)],
+          ["Đã thích", String(stats.likedExamples)],
         ].map(([label, value]) => (
           <div key={label} className={CARD}>
             <p className={NOTE}>{label}</p>
@@ -56,28 +56,28 @@ export default function StatsView({ stats }: { stats: Stats }) {
       </div>
 
       <p className={NOTE}>
-        Costs here cover the replies still stored. Summaries, explanations, memory and every other call are in{" "}
+        Chi phí ở đây chỉ tính các bản nháp còn lưu. Tóm tắt, giải thích, trí nhớ và các lượt gọi khác nằm ở trang{" "}
         <Link href="/usage" className="underline">
-          Usage
+          Chi phí
         </Link>
-        , by day, week, month and conversation.
+        , chia theo ngày, tuần, tháng và cuộc trò chuyện.
       </p>
 
       {empty && (
         <p className="text-sm text-stone-500 dark:text-stone-400">
-          Nothing to show yet. Write some replies and rate or edit them, and the numbers will fill in.
+          Chưa có gì để hiển thị. Hãy viết vài bản nháp rồi đánh giá hoặc sửa, số liệu sẽ tự xuất hiện.
         </p>
       )}
 
-      <Section title="👍 rate by week" note="Of the replies you rated, the share you liked. Last 8 weeks.">
+      <Section title="Tỉ lệ 👍 theo tuần" note="Trong các bản nháp bạn đã đánh giá, bao nhiêu phần bạn thích. 8 tuần gần nhất.">
         {stats.weekly.length === 0 ? (
-          <p className={NOTE}>No ratings yet.</p>
+          <p className={NOTE}>Chưa có đánh giá nào.</p>
         ) : (
           <table className="w-full">
             <thead>
               <tr>
-                <th className={TH}>Week of</th>
-                <th className={TH}>Liked</th>
+                <th className={TH}>Tuần từ</th>
+                <th className={TH}>Đã thích</th>
               </tr>
             </thead>
             <tbody>
@@ -94,17 +94,17 @@ export default function StatsView({ stats }: { stats: Stats }) {
         )}
       </Section>
 
-      <Section title="Does memory help?" note="The share of rated replies you liked, with Use memory on and off.">
+      <Section title="Trí nhớ có giúp ích không?" note="Tỉ lệ bản nháp được bạn thích, khi bật và khi tắt “Dùng trí nhớ”.">
         <table className="w-full">
           <tbody>
             <tr>
-              <td className={TD}>Memory on</td>
+              <td className={TD}>Bật trí nhớ</td>
               <td className={TD}>
                 <RateBar rate={stats.memoryRates.on} />
               </td>
             </tr>
             <tr>
-              <td className={TD}>Memory off</td>
+              <td className={TD}>Tắt trí nhớ</td>
               <td className={TD}>
                 <RateBar rate={stats.memoryRates.off} />
               </td>
@@ -112,25 +112,25 @@ export default function StatsView({ stats }: { stats: Stats }) {
           </tbody>
         </table>
         <p className={`mt-2 ${NOTE}`}>
-          Memory found something close enough in {formatPercent(stats.memoryHitRate.rate)} of the {stats.memoryHitRate.asked}{" "}
-          requests that asked for it.
+          Trí nhớ tìm được nội dung đủ sát trong {formatPercent(stats.memoryHitRate.rate)} của {stats.memoryHitRate.asked}{" "}
+          yêu cầu có bật trí nhớ.
         </p>
       </Section>
 
       <Section
-        title="Do notes help?"
-        note="Replies to a pasted message only: the share of rated replies you liked when the reply used one of your notes, and when it did not."
+        title="Ghi chú có giúp ích không?"
+        note="Chỉ tính các bản nháp trả lời tin nhắn đã dán: tỉ lệ bạn thích khi bản nháp có dùng ghi chú của bạn và khi không dùng."
       >
         <table className="w-full">
           <tbody>
             <tr>
-              <td className={TD}>Used a note</td>
+              <td className={TD}>Có dùng ghi chú</td>
               <td className={TD}>
                 <RateBar rate={stats.notesRates.with} />
               </td>
             </tr>
             <tr>
-              <td className={TD}>Used no note</td>
+              <td className={TD}>Không dùng ghi chú</td>
               <td className={TD}>
                 <RateBar rate={stats.notesRates.without} />
               </td>
@@ -138,22 +138,22 @@ export default function StatsView({ stats }: { stats: Stats }) {
           </tbody>
         </table>
         <p className={`mt-2 ${NOTE}`}>
-          A note was used in {formatPercent(stats.notesUse.rate)} of the {stats.notesUse.pasted} replies to a pasted message. With few
-          ratings, the two rows say little.
+          Ghi chú được dùng trong {formatPercent(stats.notesUse.rate)} của {stats.notesUse.pasted} bản nháp trả lời tin nhắn đã dán. Nếu
+          mới có ít đánh giá, hai dòng này chưa nói lên nhiều.
         </p>
       </Section>
 
-      <Section title="Cost per day" note="Estimated from token counts and a hand-kept price table. Last 14 days.">
+      <Section title="Chi phí theo ngày" note="Ước tính từ số token và bảng giá tự cập nhật. 14 ngày gần nhất.">
         {stats.costByDay.length === 0 ? (
-          <p className={NOTE}>No requests in this period.</p>
+          <p className={NOTE}>Không có yêu cầu nào trong giai đoạn này.</p>
         ) : (
           <table className="w-full">
             <thead>
               <tr>
-                <th className={TH}>Day</th>
+                <th className={TH}>Ngày</th>
                 <th className={TH}>Model</th>
-                <th className={TH}>Requests</th>
-                <th className={TH}>Cost</th>
+                <th className={TH}>Yêu cầu</th>
+                <th className={TH}>Chi phí</th>
               </tr>
             </thead>
             <tbody>
@@ -165,7 +165,7 @@ export default function StatsView({ stats }: { stats: Stats }) {
                     <td className={TD}>{model.requests}</td>
                     <td className={TD}>
                       {usd(model.usd)}
-                      {index === 0 && day.models.length > 1 && <span className={`ml-2 ${NOTE}`}>day total {usd(day.totalUsd)}</span>}
+                      {index === 0 && day.models.length > 1 && <span className={`ml-2 ${NOTE}`}>tổng ngày {usd(day.totalUsd)}</span>}
                     </td>
                   </tr>
                 )),
@@ -175,17 +175,17 @@ export default function StatsView({ stats }: { stats: Stats }) {
         )}
       </Section>
 
-      <Section title="Speed by model" note="Average over finished requests in the last 30 days.">
+      <Section title="Tốc độ theo model" note="Trung bình của các yêu cầu đã xong trong 30 ngày gần nhất.">
         {stats.latencyByModel.length === 0 ? (
-          <p className={NOTE}>No finished requests in this period.</p>
+          <p className={NOTE}>Chưa có yêu cầu nào hoàn tất trong giai đoạn này.</p>
         ) : (
           <table className="w-full">
             <thead>
               <tr>
                 <th className={TH}>Model</th>
-                <th className={TH}>Requests</th>
-                <th className={TH}>To first word</th>
-                <th className={TH}>Total</th>
+                <th className={TH}>Yêu cầu</th>
+                <th className={TH}>Đến chữ đầu tiên</th>
+                <th className={TH}>Tổng</th>
               </tr>
             </thead>
             <tbody>

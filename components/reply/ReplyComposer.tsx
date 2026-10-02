@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { EMPTY_FEEDBACK } from "@/lib/reply/feedback-state";
-import { formatMetaLine } from "@/lib/reply/format";
 import { MAX_INPUT_CHARS, MAX_PASTE_CHARS } from "@/lib/reply/limits";
-import type { ConversationDetail, ReplyContext, ReplyMode } from "@/lib/reply/types";
-import DevelopableOption from "./DevelopableOption";
-import ExplainBox from "./ExplainBox";
-import MemoryDisclosure from "./MemoryDisclosure";
-import NotesDisclosure from "./NotesDisclosure";
-import RecentGenerations from "./RecentGenerations";
+import type { ReplyStreamState } from "@/lib/reply/stream-state";
+import type { ConversationDetail, RecentGeneration, ReplyContext, ReplyMode } from "@/lib/reply/types";
 import ReplyControls from "./ReplyControls";
-import ReplyOptionCard from "./ReplyOptionCard";
-import ThreadNotice from "./ThreadNotice";
+import { feedbackRowsOf } from "./RecentGenerations";
+import TurnView, { HistoryTurn } from "./TurnView";
 import { useOptionFeedback } from "./useOptionFeedback";
 import { useReplySettings } from "./useReplySettings";
 import { useReplyStream, type GenerateRequest } from "./useReplyStream";
@@ -26,13 +21,39 @@ const STARTERS = [
   "Mình cần thêm một ngày để kiểm tra lại số liệu.",
 ] as const;
 
+// Earlier requests of this visit that stay on screen above the current one.
+const MAX_KEPT_TURNS = 12;
+// Closer than this to the bottom counts as "following the chat".
+const FOLLOW_DISTANCE_PX = 160;
+const INPUT_MAX_HEIGHT_PX = 220;
+
+interface KeptTurn {
+  key: number;
+  request: GenerateRequest;
+  state: ReplyStreamState;
+}
+
+// The chat: what was asked and answered so far (scrolling), and the input box
+// at the bottom. The writer's input leaves the box when it is sent and
+// reappears above it as their side of the chat, with the drafts below.
 export default function ReplyComposer({
   conversation,
+  transcript,
+  reviewing,
+  onCloseReview,
+  onGenerationDone,
   onThreadChanged,
   onContextChange,
 }: {
-  // The thread replies are written in, or null for "Quick translate".
+  // The thread replies are written in, or null for "Dịch nhanh".
   conversation: ConversationDetail | null;
+  // The thread's earlier messages, shown above the first request.
+  transcript?: ReactNode;
+  // An earlier request opened from the Recent list.
+  reviewing?: RecentGeneration | null;
+  onCloseReview?: () => void;
+  // A request finished and was saved; the Recent list should reload.
+  onGenerationDone?: (generationId: string) => void;
   // Called when the thread's messages changed (a paste was added, a reply was used).
   onThreadChanged: () => void;
   onContextChange: (context: ReplyContext) => void;
@@ -42,7 +63,13 @@ export default function ReplyComposer({
   const [threadInput, setThreadInput] = useState<"paste" | "idea">("paste");
   // What "Better" redoes: the last request that was actually sent.
   const [lastRequest, setLastRequest] = useState<GenerateRequest | null>(null);
+  const [kept, setKept] = useState<KeptTurn[]>([]);
+  const keptCounter = useRef(0);
   const [settings, updateSettings] = useReplySettings();
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const boxRef = useRef<HTMLTextAreaElement | null>(null);
+  const following = useRef(true);
+
   // A used or edited reply changes the thread's own messages.
   const feedback = useOptionFeedback((_id, patch) => {
     if (conversation && (patch.chosen !== undefined || patch.editedText !== undefined)) onThreadChanged();
@@ -51,13 +78,11 @@ export default function ReplyComposer({
   const { state, start, cancel } = useReplyStream({
     onMeta: (event) => {
       // The server has added the pasted conversation to the thread.
-      if (event.thread) {
-        setInput("");
-        onThreadChanged();
-      }
+      if (event.thread) onThreadChanged();
     },
     onDone: (event, generationId) => {
       load(event.options.map((option) => ({ id: option.id, generationId, ...EMPTY_FEEDBACK })));
+      onGenerationDone?.(generationId);
     },
   });
 
@@ -69,12 +94,41 @@ export default function ReplyComposer({
   const trimmedLength = input.trim().length;
   const canSubmit = !streaming && trimmedLength > 0 && input.length <= limit;
   const canRedo = !streaming && state.done !== null && state.meta !== null && lastRequest !== null;
+  const hasCurrentTurn = lastRequest !== null && (state.status !== "idle" || state.options.length > 0);
+  const hasMessages = (conversation?.messages.length ?? 0) > 0;
+  const showIntro = !hasCurrentTurn && kept.length === 0 && !reviewing && !hasMessages && trimmedLength === 0;
+  const showStarters = mode === "vi_to_en" && input === "" && !hasCurrentTurn && kept.length === 0 && !reviewing;
 
   // The first request after a quiet spell pays for writing the prompt cache.
   // Doing it on page load hides that cost.
   useEffect(() => {
     warmReplyCache(context);
   }, [context]);
+
+  // An opened request needs its ratings and edits in the store before its cards show them.
+  useEffect(() => {
+    if (reviewing) load(feedbackRowsOf([reviewing]));
+  }, [reviewing, load]);
+
+  // The box grows with what is typed, up to a limit, and shrinks when it is emptied.
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    box.style.height = "auto";
+    box.style.height = `${Math.min(box.scrollHeight, INPUT_MAX_HEIGHT_PX)}px`;
+  }, [input, mode]);
+
+  // Keep the newest part in view while the chat grows, unless the writer scrolled up to read.
+  const turnsSignature = `${kept.length}|${state.status}|${state.options.map((option) => option.text.length).join(",")}|${state.done ? 1 : 0}|${reviewing?.id ?? ""}`;
+  useEffect(() => {
+    const area = scrollRef.current;
+    if (area && following.current) area.scrollTop = area.scrollHeight;
+  }, [turnsSignature]);
+
+  function onScroll() {
+    const area = scrollRef.current;
+    if (area) following.current = area.scrollHeight - area.scrollTop - area.clientHeight < FOLLOW_DISTANCE_PX;
+  }
 
   function submit() {
     if (!canSubmit) return;
@@ -89,6 +143,13 @@ export default function ReplyComposer({
       conversationId: conversation?.id,
       ...(mode === "en_reply" ? { explain: settings.explain } : {}),
     };
+    // The request on screen stays as part of the chat; the new one takes its place.
+    if (lastRequest && hasCurrentTurn) {
+      const finished = { key: (keptCounter.current += 1), request: lastRequest, state };
+      setKept((turns) => [...turns, finished].slice(-MAX_KEPT_TURNS));
+    }
+    following.current = true;
+    setInput("");
     setLastRequest(request);
     void start(request);
   }
@@ -120,222 +181,227 @@ export default function ReplyComposer({
     void start(request);
   }
 
-  // Once the stream is done the options have ids, and feedback can be saved.
-  const cards = state.done
-    ? state.done.options.map((option) => ({ key: option.id, id: option.id, variant: option.variant, text: option.text }))
-    : state.options.map((option, index) => ({
-        key: `${index}-${option.variant}`,
-        id: null,
-        variant: option.variant,
-        text: option.text,
-      }));
+  function retry() {
+    if (!lastRequest || streaming) return;
+    void start(lastRequest);
+  }
 
-  const suggestedNotes =
-    state.done && lastRequest?.mode === "vi_to_en" ? (state.meta?.notes?.suggestions ?? []) : [];
-  const suggestionTarget = Math.max(0, cards.findIndex((card) => card.variant === "medium"));
+  function restoreInput() {
+    if (!lastRequest) return;
+    setInput(lastRequest.input);
+    boxRef.current?.focus();
+  }
+
+  const develop = { speed: settings.speed, learn: settings.learn };
 
   return (
-    <div className="space-y-5">
-      {conversation && (
-        <div role="group" aria-label="What to write" className="flex gap-2">
-          {(
-            [
-              ["paste", "📋 Paste their message"],
-              ["idea", "✍️ Ý tiếng Việt"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              disabled={streaming}
-              aria-pressed={threadInput === value}
-              onClick={() => setThreadInput(value)}
-              className={`rounded-full border px-3.5 py-1 text-sm font-medium transition disabled:opacity-60 ${
-                threadInput === value
-                  ? "border-accent-300 bg-accent-100 text-accent-900 dark:border-accent-700 dark:bg-accent-900/50 dark:text-accent-100"
-                  : "border-stone-300 bg-white text-stone-600 hover:border-stone-400 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="flex h-full min-h-0 flex-col">
+      <div ref={scrollRef} onScroll={onScroll} className="min-h-0 flex-1 overflow-y-auto">
+        <div className={`mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 py-6 ${showIntro ? "" : "gap-6"}`}>
+          {transcript}
 
-      <div className="rounded-3xl border border-stone-200 bg-white p-3 shadow-sm transition focus-within:border-accent-300 focus-within:ring-4 focus-within:ring-accent-100/70 dark:border-stone-700 dark:bg-stone-800 dark:focus-within:border-accent-700 dark:focus-within:ring-accent-900/40">
-        <label htmlFor="reply-input" className="sr-only">
-          {mode === "en_reply" ? "The conversation or their latest message, in English" : "What you want to say, in Vietnamese"}
-        </label>
-        <textarea
-          id="reply-input"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onFocus={() => warmReplyCache(context)}
-          onKeyDown={(e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-              e.preventDefault();
-              submit();
-            }
-          }}
-          rows={mode === "en_reply" ? 7 : 4}
-          placeholder={
-            mode === "en_reply"
-              ? "Paste the chat or just their newest message. Earlier lines that are already in this conversation are skipped."
-              : "Bạn muốn nói gì? Gõ ý tiếng Việt ở đây…"
-          }
-          className="w-full resize-none bg-transparent px-3 pb-1 pt-2 text-[16px] leading-relaxed text-stone-800 outline-none placeholder:text-stone-400 dark:text-stone-100 dark:placeholder:text-stone-500"
-        />
-
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-3 px-1">
-          <div className="min-w-0 flex-1">
-            <ReplyControls
-              settings={{ ...settings, context }}
-              onChange={({ context: nextContext, ...rest }) => {
-                // Inside a thread the context belongs to the thread.
-                if (nextContext !== undefined) {
-                  if (conversation) onContextChange(nextContext);
-                  else updateSettings({ context: nextContext });
-                }
-                if (Object.keys(rest).length > 0) updateSettings(rest);
-              }}
-              disabled={streaming}
-              showExplain={mode === "en_reply"}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span
-              className={`hidden text-xs sm:inline ${
-                input.length > limit ? "text-red-600 dark:text-red-400" : "text-stone-400 dark:text-stone-500"
-              }`}
-            >
-              {input.length} / {limit}
-            </span>
-            {streaming && (
-              <button
-                type="button"
-                onClick={cancel}
-                className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-700"
-              >
-                Stop
-              </button>
-            )}
-            {canRedo && (
-              <button
-                type="button"
-                onClick={redoBetter}
-                aria-label="Better: write these again with the careful model"
-                title="Write these again with the careful model"
-                className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-700"
-              >
-                🎯 Better
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={submit}
-              disabled={!canSubmit}
-              aria-label={streaming ? "Writing…" : mode === "en_reply" ? "Suggest replies" : "Write replies"}
-              title={`${mode === "en_reply" ? "Suggest replies" : "Write replies"} (Ctrl/⌘ + Enter)`}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-600 text-white shadow-sm transition hover:bg-accent-700 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 dark:disabled:bg-stone-700 dark:disabled:text-stone-500"
-            >
-              {streaming ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          {showIntro && (
+            <div className="my-auto py-8 text-center">
+              {conversation ? (
+                <>
+                  <p aria-hidden="true" className="text-3xl">
+                    📋
+                  </p>
+                  <h1 className="mt-2 font-serif text-2xl tracking-tight text-stone-900 sm:text-3xl dark:text-stone-50">
+                    Dán đoạn chat vào đây
+                  </h1>
+                  <p className="mx-auto mt-2 max-w-md text-[15px] text-stone-500 dark:text-stone-400">
+                    Dán đoạn chat tiếng Anh (hoặc chỉ tin nhắn mới nhất của họ) vào ô bên dưới, bạn sẽ nhận vài gợi ý trả lời đúng
+                    ngữ cảnh. Phần đã dán sẽ hiện ở đây.
+                  </p>
+                </>
               ) : (
-                <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 19V5M5 12l7-7 7 7" />
-                </svg>
+                <>
+                  <p aria-hidden="true" className="text-3xl text-accent-600 dark:text-accent-500">
+                    ✻
+                  </p>
+                  <h1 className="mt-2 font-serif text-3xl tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
+                    Bạn muốn nói gì?
+                  </h1>
+                  <p className="mx-auto mt-2 max-w-xl text-[15px] text-stone-500 dark:text-stone-400">
+                    Gõ ý của bạn bằng tiếng Việt, hoặc mở một cuộc trò chuyện để dán đoạn chat tiếng Anh. Bạn sẽ nhận vài bản nháp
+                    theo đúng giọng của mình. App không bao giờ tự gửi thay bạn.
+                  </p>
+                </>
               )}
-            </button>
-          </div>
+            </div>
+          )}
+          {!showIntro && <h1 className="sr-only">Reply Assistant</h1>}
+
+          {kept.map((turn) => (
+            <TurnView key={turn.key} request={turn.request} state={turn.state} store={feedback} settings={develop} live={false} />
+          ))}
+
+          {lastRequest && hasCurrentTurn && (
+            <TurnView
+              request={lastRequest}
+              state={state}
+              store={feedback}
+              settings={develop}
+              live
+              onLeaveOut={canRedo ? redoWithoutNote : undefined}
+              onRetry={retry}
+              onRestore={restoreInput}
+            />
+          )}
+
+          {reviewing && (
+            <section aria-label="Lượt đang xem lại" className="space-y-3">
+              <div className="flex items-center justify-between gap-2 rounded-lg bg-stone-100 px-3 py-1.5 text-xs text-stone-500 dark:bg-stone-800 dark:text-stone-400">
+                <span>Đang xem lại một lượt trước đó</span>
+                <button type="button" onClick={onCloseReview} className="rounded-full px-2 py-0.5 font-medium hover:bg-stone-200 dark:hover:bg-stone-700">
+                  Đóng
+                </button>
+              </div>
+              <HistoryTurn generation={reviewing} store={feedback} settings={develop} />
+            </section>
+          )}
         </div>
       </div>
 
-      {mode === "vi_to_en" && input === "" && state.status === "idle" && (
-        <div role="group" aria-label="Examples" className="flex flex-wrap justify-center gap-2">
-          {STARTERS.map((example) => (
-            <button
-              key={example}
-              type="button"
-              onClick={() => setInput(example)}
-              className="rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-[13px] text-stone-600 transition hover:border-accent-300 hover:bg-accent-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:border-accent-700 dark:hover:bg-stone-700"
-            >
-              {example}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {state.error && (
-        <p
-          role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400"
-        >
-          {state.error.message}
-        </p>
-      )}
-
-      {state.meta?.thread && <ThreadNotice added={state.meta.thread.added} skipped={state.meta.thread.skipped} />}
-
-      {(state.explanation || (streaming && lastRequest?.explain && lastRequest.mode === "en_reply")) && (
-        <ExplainBox text={state.explanation} />
-      )}
-
-      {state.meta && <MemoryDisclosure status={state.meta.memoryStatus} memories={state.meta.memories} />}
-
-      {state.meta && lastRequest && (
-        <NotesDisclosure
-          mode={lastRequest.mode}
-          notes={state.meta.notes}
-          used={state.done?.notesUsed}
-          disabled={streaming}
-          onLeaveOut={redoWithoutNote}
-        />
-      )}
-
-      {cards.length > 0 && (
-        <section aria-label="Reply options" aria-live="polite" className="space-y-3">
-          {cards.map((card, index) =>
-            card.id && state.meta ? (
-              <DevelopableOption
-                key={card.key}
-                option={{ id: card.id, generationId: state.meta.generationId, variant: card.variant, text: card.text }}
-                store={feedback}
-                settings={{ speed: settings.speed, learn: settings.learn }}
-                // Notes that fit a typed idea are suggested under one reply (the medium one).
-                suggestions={index === suggestionTarget ? suggestedNotes : undefined}
-              />
-            ) : (
-              <ReplyOptionCard
-                key={card.key}
-                variant={card.variant}
-                text={card.text}
-                streaming={streaming && index === cards.length - 1}
-              />
-            ),
+      <div className="shrink-0 px-4 pb-4 pt-2">
+        <div className="mx-auto w-full max-w-3xl space-y-2.5">
+          {showStarters && (
+            <div role="group" aria-label="Gợi ý" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 sm:pb-0">
+              {STARTERS.map((example) => (
+                <button
+                  key={example}
+                  type="button"
+                  onClick={() => {
+                    setInput(example);
+                    boxRef.current?.focus();
+                  }}
+                  className="shrink-0 whitespace-nowrap rounded-full border border-stone-200 bg-white px-3.5 py-1.5 text-[13px] text-stone-600 transition hover:border-accent-300 hover:bg-accent-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:border-accent-700 dark:hover:bg-stone-700"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
           )}
-        </section>
-      )}
 
-      {state.done && state.meta && (
-        <p className="text-xs text-stone-400 dark:text-stone-500">
-          {formatMetaLine({
-            model: state.meta.model,
-            firstTokenMs: state.done.firstTokenMs,
-            totalMs: state.done.totalMs,
-            costUsd: state.done.costUsd,
-          })}{" "}
-          (cost is an estimate)
-        </p>
-      )}
+          {conversation && (
+            <div role="group" aria-label="Nội dung muốn viết" className="flex gap-2">
+              {(
+                [
+                  ["paste", "📋 Dán tin nhắn của họ"],
+                  ["idea", "✍️ Ý tiếng Việt"],
+                ] as const
+              ).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  disabled={streaming}
+                  aria-pressed={threadInput === value}
+                  onClick={() => setThreadInput(value)}
+                  className={`rounded-full border px-3.5 py-1 text-sm font-medium transition disabled:opacity-60 ${
+                    threadInput === value
+                      ? "border-accent-300 bg-accent-100 text-accent-900 dark:border-accent-700 dark:bg-accent-900/50 dark:text-accent-100"
+                      : "border-stone-300 bg-white text-stone-600 hover:border-stone-400 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
 
-      <RecentGenerations
-        scope={conversation?.id ?? "none"}
-        refreshKey={state.status === "done" ? (state.meta?.generationId ?? null) : null}
-        excludeId={state.meta?.generationId ?? null}
-        store={feedback}
-        develop={{ speed: settings.speed, learn: settings.learn }}
-      />
+          <div className="rounded-3xl border border-stone-200 bg-white p-3 shadow-sm transition focus-within:border-accent-300 focus-within:ring-4 focus-within:ring-accent-100/70 dark:border-stone-700 dark:bg-stone-800 dark:focus-within:border-accent-700 dark:focus-within:ring-accent-900/40">
+            <label htmlFor="reply-input" className="sr-only">
+              {mode === "en_reply" ? "Đoạn chat hoặc tin nhắn mới nhất của họ, bằng tiếng Anh" : "Điều bạn muốn nói, bằng tiếng Việt"}
+            </label>
+            <textarea
+              id="reply-input"
+              ref={boxRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onFocus={() => warmReplyCache(context)}
+              onKeyDown={(e) => {
+                // Enter sends, Shift+Enter starts a new line. While an input method is still
+                // composing a word (Vietnamese Telex/VNI), Enter belongs to the method.
+                if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
+                e.preventDefault();
+                submit();
+              }}
+              rows={mode === "en_reply" ? 3 : 2}
+              placeholder={
+                mode === "en_reply"
+                  ? "Dán đoạn chat hoặc chỉ tin nhắn mới nhất của họ. Những dòng đã có trong cuộc trò chuyện sẽ được bỏ qua."
+                  : "Bạn muốn nói gì? Gõ ý tiếng Việt ở đây…"
+              }
+              className="block w-full resize-none bg-transparent px-3 pb-1 pt-2 text-[16px] leading-relaxed text-stone-800 outline-none placeholder:text-stone-400 dark:text-stone-100 dark:placeholder:text-stone-500"
+            />
+
+            <div className="mt-2 flex flex-wrap items-end justify-between gap-x-4 gap-y-3 px-1">
+              <div className="min-w-0 flex-1">
+                <ReplyControls
+                  settings={{ ...settings, context }}
+                  onChange={({ context: nextContext, ...rest }) => {
+                    // Inside a thread the context belongs to the thread.
+                    if (nextContext !== undefined) {
+                      if (conversation) onContextChange(nextContext);
+                      else updateSettings({ context: nextContext });
+                    }
+                    if (Object.keys(rest).length > 0) updateSettings(rest);
+                  }}
+                  disabled={streaming}
+                  showExplain={mode === "en_reply"}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span
+                  className={`hidden text-xs sm:inline ${
+                    input.length > limit ? "text-red-600 dark:text-red-400" : "text-stone-400 dark:text-stone-500"
+                  }`}
+                >
+                  {input.length} / {limit}
+                </span>
+                {streaming && (
+                  <button
+                    type="button"
+                    onClick={cancel}
+                    className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-700"
+                  >
+                    Dừng
+                  </button>
+                )}
+                {canRedo && (
+                  <button
+                    type="button"
+                    onClick={redoBetter}
+                    aria-label="Viết kỹ hơn: viết lại các bản này bằng mô hình kỹ lưỡng"
+                    title="Viết lại bằng mô hình kỹ lưỡng"
+                    className="rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-700"
+                  >
+                    🎯 Viết kỹ hơn
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={submit}
+                  disabled={!canSubmit}
+                  aria-label={streaming ? "Đang viết…" : mode === "en_reply" ? "Gợi ý trả lời" : "Viết bản nháp"}
+                  title={`${mode === "en_reply" ? "Gợi ý trả lời" : "Viết bản nháp"} (Enter · Shift+Enter để xuống dòng)`}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-600 text-white shadow-sm transition hover:bg-accent-700 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500 dark:disabled:bg-stone-700 dark:disabled:text-stone-500"
+                >
+                  {streaming ? (
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                  ) : (
+                    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 19V5M5 12l7-7 7 7" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

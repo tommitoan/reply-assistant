@@ -241,7 +241,7 @@ describe("startRefinement", () => {
     const { repo, calls } = fakeRepo(null);
     const { stream } = fakeStream([final()]);
     const result = await startRefinement(BODY, deps({ repo, stream }));
-    expect(result).toEqual({ ok: false, status: 404, error: "That reply was not found." });
+    expect(result).toEqual({ ok: false, status: 404, error: "Không tìm thấy bản nháp này." });
     expect(calls.created).toHaveLength(0);
   });
 

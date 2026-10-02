@@ -16,12 +16,12 @@ describe("formatMetaLine", () => {
   it("shows model, first-token time, total time and cost", () => {
     expect(
       formatMetaLine({ model: "claude-haiku-4-5", firstTokenMs: 820, totalMs: 2900, costUsd: 0.0031 }),
-    ).toBe("haiku · first 0.8s · total 2.9s · $0.003");
+    ).toBe("haiku · chữ đầu 0.8s · tổng 2.9s · $0.003");
   });
 
   it("omits the first-token time when it is unknown", () => {
     expect(formatMetaLine({ model: "claude-haiku-4-5", firstTokenMs: null, totalMs: 1000, costUsd: 0.5 })).toBe(
-      "haiku · total 1.0s · $0.500",
+      "haiku · tổng 1.0s · $0.500",
     );
   });
 
@@ -29,6 +29,6 @@ describe("formatMetaLine", () => {
     expect(formatMetaLine({ model: "claude-haiku-4-5", firstTokenMs: 1, totalMs: 1, costUsd: 0.0002 })).toContain(
       "<$0.001",
     );
-    expect(formatMetaLine({ model: "x", firstTokenMs: 1, totalMs: 1, costUsd: null })).toContain("cost n/a");
+    expect(formatMetaLine({ model: "x", firstTokenMs: 1, totalMs: 1, costUsd: null })).toContain("chưa có giá");
   });
 });

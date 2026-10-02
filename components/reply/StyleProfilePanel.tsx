@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MAX_RULE_CHARS, MAX_RULES } from "@/lib/reply/style-profile";
+import { MAX_RULE_CHARS, MAX_RULES, MIN_EVIDENCE_TOTAL } from "@/lib/reply/style-profile";
 import type { StyleProfileRecord } from "@/lib/reply/types";
 
 interface Listing {
@@ -50,7 +50,7 @@ function RulesEditor({
   const kept = rules.map((rule) => rule.trim()).filter(Boolean);
 
   return (
-    <div className="space-y-2" role="group" aria-label={`Edit the rules of version ${profile.version}`}>
+    <div className="space-y-2" role="group" aria-label={`Sửa quy tắc của phiên bản ${profile.version}`}>
       <ul className="space-y-2">
         {rules.map((rule, index) => (
           <li key={index} className="flex items-start gap-2">
@@ -58,18 +58,18 @@ function RulesEditor({
               value={rule}
               maxLength={MAX_RULE_CHARS}
               rows={2}
-              aria-label={`Rule ${index + 1}`}
+              aria-label={`Quy tắc ${index + 1}`}
               onChange={(e) => setRules(rules.map((value, i) => (i === index ? e.target.value : value)))}
               className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white p-2 text-sm text-stone-800 outline-none focus:border-stone-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200"
             />
             <button
               type="button"
               disabled={busy}
-              aria-label={`Delete rule ${index + 1}`}
+              aria-label={`Xóa quy tắc ${index + 1}`}
               onClick={() => setRules(rules.filter((_, i) => i !== index))}
               className={BUTTON}
             >
-              Delete
+              Xóa
             </button>
           </li>
         ))}
@@ -81,19 +81,19 @@ function RulesEditor({
           onClick={() => setRules([...rules, ""])}
           className={BUTTON}
         >
-          Add a rule
+          Thêm quy tắc
         </button>
         <button type="button" disabled={busy || kept.length === 0} onClick={() => void onSave(kept)} className={PRIMARY}>
-          {busy ? "Saving…" : "Save rules"}
+          {busy ? "Đang lưu…" : "Lưu quy tắc"}
         </button>
         <button type="button" disabled={busy} onClick={onCancel} className={BUTTON}>
-          Cancel
+          Hủy
         </button>
       </div>
       <p className="text-xs text-stone-400 dark:text-stone-500">
         {kept.length === 0
-          ? "Keep at least one rule. To stop using a profile, leave it switched off."
-          : `${kept.length} of at most ${MAX_RULES} rules. Empty and repeated rules are dropped when you save.`}
+          ? "Cần giữ lại ít nhất một quy tắc. Muốn ngừng dùng hồ sơ thì cứ để nó ở trạng thái tắt."
+          : `${kept.length} trên tối đa ${MAX_RULES} quy tắc. Quy tắc trống hoặc trùng sẽ tự bị bỏ khi lưu.`}
       </p>
     </div>
   );
@@ -101,12 +101,12 @@ function RulesEditor({
 
 function sourceLine(profile: StyleProfileRecord): string {
   const { edited, liked, disliked, refined = 0 } = profile.sourceCounts;
-  const developed = refined > 0 ? `, ${refined} developed` : "";
-  return `from ${edited} edited, ${liked} liked, ${disliked} disliked${developed}`;
+  const developed = refined > 0 ? `, ${refined} bản mở rộng` : "";
+  return `từ ${edited} bản đã sửa, ${liked} bản thích, ${disliked} bản không thích${developed}`;
 }
 
 async function errorOf(res: Response, fallback: string): Promise<string> {
-  if (res.status === 401) return "Your session expired. Reload the page to sign in again.";
+  if (res.status === 401) return "Phiên đăng nhập đã hết hạn. Tải lại trang để đăng nhập lại.";
   try {
     const body = (await res.json()) as { error?: unknown };
     if (typeof body.error === "string") return body.error;
@@ -130,14 +130,14 @@ export default function StyleProfilePanel() {
     let cancelled = false;
     fetch("/api/reply/style-profile")
       .then(async (res) => {
-        if (!res.ok) throw new Error(await errorOf(res, "Could not load the style profiles."));
+        if (!res.ok) throw new Error(await errorOf(res, "Không tải được các hồ sơ phong cách."));
         const body = (await res.json()) as Listing;
         if (cancelled) return;
         setListing(body);
         setLoadError(null);
       })
       .catch((err) => {
-        if (!cancelled) setLoadError(err instanceof Error ? err.message : "Could not load the style profiles.");
+        if (!cancelled) setLoadError(err instanceof Error ? err.message : "Không tải được các hồ sơ phong cách.");
       });
     return () => {
       cancelled = true;
@@ -163,7 +163,7 @@ export default function StyleProfilePanel() {
       if (body.profile) setJustBuiltId(body.profile.id);
       return true;
     } catch {
-      setProblem("Could not reach the server. Check the connection and try again.");
+      setProblem("Không kết nối được với máy chủ. Kiểm tra mạng rồi thử lại.");
       return false;
     } finally {
       setBusy(null);
@@ -179,14 +179,14 @@ export default function StyleProfilePanel() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ rules }),
         }),
-      "Could not save the rules.",
+      "Không lưu được các quy tắc.",
     );
     if (saved) setEditingId(null);
     return saved;
   }
 
   const build = () =>
-    call("build", () => fetch("/api/reply/style-profile", { method: "POST" }), "Could not build a style profile.");
+    call("build", () => fetch("/api/reply/style-profile", { method: "POST" }), "Không tạo được hồ sơ phong cách.");
   const switchTo = (activeId: string | null) =>
     call(
       "switch",
@@ -196,7 +196,7 @@ export default function StyleProfilePanel() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ activeId }),
         }),
-      "Could not save that.",
+      "Không lưu được thay đổi này.",
     );
 
   if (loadError && !listing) {
@@ -204,43 +204,44 @@ export default function StyleProfilePanel() {
       <p role="alert" className="text-sm text-red-600 dark:text-red-400">
         {loadError}{" "}
         <button type="button" className="underline" onClick={() => setVersion((v) => v + 1)}>
-          Try again
+          Thử lại
         </button>
       </p>
     );
   }
-  if (!listing) return <p className="text-sm text-stone-400">Loading…</p>;
+  if (!listing) return <p className="text-sm text-stone-400">Đang tải…</p>;
 
   const { profiles, active } = listing;
 
   return (
     <div className="space-y-5">
-      <section className={CARD} aria-label="In use">
-        <h2 className="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100">In use now</h2>
+      <section className={CARD} aria-label="Đang dùng">
+        <h2 className="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100">Đang dùng</h2>
         {active ? (
           <>
             <p className="mb-2 text-xs text-stone-500 dark:text-stone-400">
-              Version {active.version}, {sourceLine(active)}. These rules go in front of every request.
+              Phiên bản {active.version}, {sourceLine(active)}. Các quy tắc này được đặt vào mọi yêu cầu.
             </p>
             <Rules profile={active} />
             <button type="button" className={`${BUTTON} mt-3`} disabled={busy !== null} onClick={() => switchTo(null)}>
-              Switch off
+              Tắt hồ sơ này
             </button>
           </>
         ) : (
           <p className="text-sm text-stone-500 dark:text-stone-400">
-            No style profile is switched on, so replies use the base voice only.
+            Chưa bật hồ sơ phong cách nào, nên bản nháp đang dùng giọng văn mặc định.
           </p>
         )}
       </section>
 
       <div>
         <button type="button" className={PRIMARY} disabled={busy !== null} onClick={build}>
-          {busy === "build" ? "Building…" : "Build a new profile from my feedback"}
+          {busy === "build" ? "Đang tạo…" : "Tạo phiên bản mới"}
         </button>
         <p className="mt-2 text-xs text-stone-400 dark:text-stone-500">
-          Learns from replies you edited or rated (only requests kept with Learn on). It needs at least 5 of them. The new
-          version is saved switched off so you can read it first.
+          Học từ các bản nháp bạn đã sửa, đánh giá hoặc mở rộng (chỉ tính những yêu cầu có bật “Ghi nhớ để học”). Cần ít nhất{" "}
+          {MIN_EVIDENCE_TOTAL} ví dụ, trong đó có ít nhất một ví dụ không phải 👎. Mỗi lần tạo tốn một lượt gọi model, và phiên bản mới
+          luôn ở trạng thái tắt để bạn đọc trước.
         </p>
       </div>
 
@@ -253,9 +254,20 @@ export default function StyleProfilePanel() {
         </p>
       )}
 
+      {profiles.length === 0 && (
+        <section aria-label="Chưa có phiên bản" className="rounded-xl border border-dashed border-stone-300 p-4 text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
+          <p className="font-medium text-stone-700 dark:text-stone-200">Chưa có phiên bản nào.</p>
+          <p className="mt-1">
+            Bạn cứ dùng app như bình thường: sửa lại bản nháp cho giống cách bạn viết, bấm 👍 hoặc 👎, hay thử “🌱 Mở rộng” rồi chọn bản
+            ưng ý. Khi có từ {MIN_EVIDENCE_TOTAL} ví dụ trở lên, bấm “Tạo phiên bản mới” ở trên. Chưa đủ thì app sẽ báo cho bạn biết còn thiếu
+            bao nhiêu.
+          </p>
+        </section>
+      )}
+
       {profiles.length > 0 && (
-        <section aria-label="Versions" className="space-y-2">
-          <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-100">Versions</h2>
+        <section aria-label="Các phiên bản" className="space-y-2">
+          <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-100">Các phiên bản</h2>
           {profiles.map((profile) => (
             <details
               key={profile.id}
@@ -263,18 +275,18 @@ export default function StyleProfilePanel() {
               className="rounded-xl border border-stone-200 bg-white p-3 shadow-sm dark:border-stone-800 dark:bg-stone-800"
             >
               <summary className="cursor-pointer text-sm text-stone-700 dark:text-stone-200">
-                <span className="font-medium">Version {profile.version}</span>
+                <span className="font-medium">Phiên bản {profile.version}</span>
                 <span className="ml-2 text-xs text-stone-400 dark:text-stone-500">
-                  {new Date(profile.createdAt).toLocaleString()} · {sourceLine(profile)}
+                  {new Date(profile.createdAt).toLocaleString("vi-VN")} · {sourceLine(profile)}
                 </span>
                 {profile.active && (
                   <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-xs text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
-                    In use
+                    Đang dùng
                   </span>
                 )}
                 {profile.id === justBuiltId && !profile.active && (
                   <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                    New, not switched on yet
+                    Mới tạo, chưa bật
                   </span>
                 )}
               </summary>
@@ -292,16 +304,16 @@ export default function StyleProfilePanel() {
                 {!profile.active && editingId !== profile.id && (
                   <div className="flex flex-wrap gap-2">
                     <button type="button" className={BUTTON} disabled={busy !== null} onClick={() => setEditingId(profile.id)}>
-                      Edit rules
+                      Sửa quy tắc
                     </button>
                     <button type="button" className={BUTTON} disabled={busy !== null} onClick={() => switchTo(profile.id)}>
-                      Switch on this version
+                      Bật phiên bản này
                     </button>
                   </div>
                 )}
                 {profile.active && (
                   <p className="text-xs text-stone-400 dark:text-stone-500">
-                    This version is in use. To edit its rules, switch it off first.
+                    Phiên bản này đang được dùng. Muốn sửa quy tắc, hãy tắt nó trước.
                   </p>
                 )}
               </div>

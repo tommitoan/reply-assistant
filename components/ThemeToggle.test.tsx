@@ -11,17 +11,17 @@ afterEach(() => {
 describe("ThemeToggle", () => {
   it("starts in light mode when no dark class is present", () => {
     render(<ThemeToggle />);
-    expect(screen.getByRole("button", { name: /switch to dark theme/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /chuyển sang giao diện tối/i })).toBeInTheDocument();
     expect(document.documentElement.classList.contains("dark")).toBe(false);
   });
 
   it("switches to dark mode on click and persists the choice", () => {
     render(<ThemeToggle />);
-    fireEvent.click(screen.getByRole("button", { name: /switch to dark theme/i }));
+    fireEvent.click(screen.getByRole("button", { name: /chuyển sang giao diện tối/i }));
 
     expect(document.documentElement.classList.contains("dark")).toBe(true);
     expect(window.localStorage.getItem("theme")).toBe("dark");
-    expect(screen.getByRole("button", { name: /switch to light theme/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /chuyển sang giao diện sáng/i })).toBeInTheDocument();
   });
 
   it("switches back to light mode on a second click", () => {
@@ -33,6 +33,6 @@ describe("ThemeToggle", () => {
 
     expect(document.documentElement.classList.contains("dark")).toBe(false);
     expect(window.localStorage.getItem("theme")).toBe("light");
-    expect(screen.getByRole("button", { name: /switch to dark theme/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /chuyển sang giao diện tối/i })).toBeInTheDocument();
   });
 });

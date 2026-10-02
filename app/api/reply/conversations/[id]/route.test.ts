@@ -22,20 +22,20 @@ describe("/api/reply/conversations/[id] validation", () => {
     const req = new Request("http://localhost/api/reply/conversations/12");
     for (const res of [await GET(req, context("12")), await DELETE(req, context("12")), await patch("12", "{}")]) {
       expect(res.status).toBe(404);
-      expect(await res.json()).toEqual({ error: "That conversation was not found." });
+      expect(await res.json()).toEqual({ error: "Không tìm thấy cuộc trò chuyện này." });
     }
   });
 
   it("rejects a PATCH body that is not JSON", async () => {
     const res = await patch(VALID_ID, "{nope");
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "Invalid JSON body." });
+    expect(await res.json()).toEqual({ error: "Dữ liệu gửi lên không hợp lệ." });
   });
 
   it("rejects an empty PATCH and bad values", async () => {
     const empty = await patch(VALID_ID, "{}");
     expect(empty.status).toBe(400);
-    expect(await empty.json()).toEqual({ error: "Nothing to update." });
+    expect(await empty.json()).toEqual({ error: "Không có gì để cập nhật." });
     expect((await patch(VALID_ID, JSON.stringify({ context: "family" }))).status).toBe(400);
     expect((await patch(VALID_ID, JSON.stringify({ archived: "yes" }))).status).toBe(400);
     expect((await patch(VALID_ID, JSON.stringify({ title: "a".repeat(121) }))).status).toBe(400);

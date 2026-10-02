@@ -34,13 +34,13 @@ describe("checkEvidence", () => {
   it("says how many are needed when there is too little feedback", () => {
     const result = checkEvidence(evidence(1, 1, 1));
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.message).toContain(`3 of ${MIN_EVIDENCE_TOTAL} needed`);
+    if (!result.ok) expect(result.message).toContain(`3 trên ${MIN_EVIDENCE_TOTAL}`);
   });
 
   it("asks for edits or likes when everything so far is a dislike", () => {
     const result = checkEvidence(evidence(0, 0, 8));
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.message).toMatch(/only 👎/i);
+    if (!result.ok) expect(result.message).toMatch(/chỉ có đánh giá 👎/i);
   });
 
   it("counts developed replies as positive evidence", () => {
