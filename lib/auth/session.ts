@@ -1,7 +1,7 @@
 // Session cookies are `<expiry-unix-seconds>.<hmac-sha256-hex>`. Only Web
 // Crypto is used so the same code runs in the proxy and in Server Actions.
 
-export const SESSION_COOKIE = "ip_session";
+export const SESSION_COOKIE = "reply_session";
 export const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 
 // Shared by login (sets the cookie) and logout (expires it): the browser only

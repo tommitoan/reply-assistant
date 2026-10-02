@@ -38,6 +38,45 @@ Open http://localhost:3000 and sign in with `APP_PASSCODE`.
 
 **Try it without an API key:** with an empty local database, `npm run seed:demo` adds a chat, a few requests with replies, notes (one private, one waiting in the inbox), two style-profile versions and usage rows. The demo notes carry placeholder vectors.
 
+## Self-host with Docker
+
+The simplest way to run it on a server or a home machine: one command starts the database, creates the tables, and starts the app.
+
+```bash
+cp .env.example .env
+```
+
+Fill in `.env`: `REPLY_DB_PASSWORD` (any strong password), `APP_PASSCODE`, `APP_SESSION_SECRET`, `REPLY_ANTHROPIC_API_KEY`, and optionally `VOYAGE_API_KEY` and `APP_PORT`. You do not need to touch `DATABASE_URL`: in this mode it is built from the password and points at the `db` container.
+
+```bash
+docker compose up -d --build
+docker compose ps          # app should become "healthy"
+docker compose logs -f app
+```
+
+Open `http://localhost:3000` (or your `APP_PORT`) and sign in.
+
+What happens:
+
+| Service | Does |
+|---|---|
+| `db` | Postgres 17 with pgvector. Not published on any port; data in the `pgdata` volume |
+| `migrate` | Runs once per `up` and exits: applies `drizzle/` to the database (already-applied migrations are skipped) |
+| `app` | The Next.js standalone server on port 8080 inside the container, started only after `migrate` succeeded. The image has a healthcheck on `/api/health` |
+
+To update: pull the new code and run `docker compose up -d --build` again; new migrations are applied first. To stop: `docker compose down` (data is kept; `down -v` deletes it).
+
+On a server, put a reverse proxy with HTTPS in front (Caddy, Nginx, Traefik) and do not expose the port directly. The login cookie is only as safe as the connection it travels on. Make sure the proxy does not buffer responses, or the replies will appear all at once instead of progressively.
+
+A database you already have (for example Neon) works too: build and run only the image, with your own `DATABASE_URL`:
+
+```bash
+docker build -t reply-assistant .
+docker run -d --name reply-assistant -p 3000:8080 --env-file .env reply-assistant
+```
+
+(and apply the migrations once, as in the Railway steps below). A plain Postgres on a private network is addressed with `?sslmode=disable` at the end of the URL; any other host uses TLS.
+
 ## Environment variables
 
 | Variable | Required | Default | Purpose |
@@ -68,7 +107,7 @@ Open http://localhost:3000 and sign in with `APP_PASSCODE`.
    ```
 
    Four migrations exist: the foundation; usage ledger and explanation; developed replies; notes. The code writes their columns on every request, so migrate **before** deploying the code that needs them. They only add.
-3. **Railway**: create a service from this repository (the `Dockerfile` and `railway.toml` are used; the health check is `/api/health`) and set the variables above. `DATABASE_URL` may be the pooled URL here.
+3. **Railway**: create a service from this repository (the `Dockerfile` and `railway.toml` are used; the health check is `/api/health`) and set the variables above. Any other platform that runs a Dockerfile works the same way. `DATABASE_URL` may be the pooled URL here.
 4. **Anthropic Console**: create a key for this app and set a monthly spend limit. `REPLY_DAILY_BUDGET_USD` only counts what the app recorded, so the console limit is the last line of defence if the passcode leaks.
 5. **Smoke test**: `/api/health` answers without login; every other page redirects to `/login`; write one reply and check that the options appear progressively (if they appear all at once, a proxy is buffering the stream); rate it; open the stats page; sign out.
 

@@ -85,6 +85,15 @@ npm run dev                     # http://localhost:3000, sign in with APP_PASSCO
 
 Try every page without any API key: with the database empty, `npm run seed:demo` fills it with made-up data.
 
+### Or run everything in Docker (app and database)
+
+```bash
+cp .env.example .env            # fill in the required values; DATABASE_URL is built for you
+docker compose up -d --build    # database, migrations, then the app
+```
+
+Open http://localhost:3000 (set `APP_PORT` in `.env` to change it). The `migrate` service creates the tables before the app starts, the database is not published on any port, and its data lives in a Docker volume. Details: [docs/SETUP.md](docs/SETUP.md#self-host-with-docker).
+
 Full setup, every environment variable, deployment, troubleshooting: [docs/SETUP.md](docs/SETUP.md). Vietnamese guide: [docs/HUONG-DAN.vi.md](docs/HUONG-DAN.vi.md).
 
 ## Testing and verification
@@ -105,6 +114,9 @@ lib/reply/           everything else: prompt, routing, streaming, memory, notes,
 lib/auth/            passcode session and login rate limiting
 drizzle/             SQL migrations
 scripts/smoke/       real-database checks (local only)
+Dockerfile           the app image (and a `migrator` stage that creates the tables)
+docker-compose.yml   self-hosting: app + database + migrations
+compose.dev.yml      database only, for `npm run dev`
 docs/                setup, architecture, screenshots
 ```
 

@@ -17,6 +17,14 @@ describe("connectionOptions", () => {
     });
   });
 
+  it("allows a plain connection to a private-network host only when the URL says sslmode=disable", () => {
+    expect(connectionOptions("postgres://reply:pw@db:5432/reply?sslmode=disable")).toMatchObject({ ssl: false, prepare: true });
+    expect(connectionOptions("postgres://reply:pw@db:5432/reply")).toMatchObject({ ssl: "require" });
+    // Any other value keeps TLS on, so a typo cannot silently turn it off.
+    expect(connectionOptions("postgres://reply:pw@db:5432/reply?sslmode=prefer")).toMatchObject({ ssl: "require" });
+    expect(connectionOptions("postgres://reply:pw@db:5432/reply?sslmode=require")).toMatchObject({ ssl: "require" });
+  });
+
   it("turns prepared statements off behind a transaction pooler", () => {
     expect(
       connectionOptions("postgresql://u:pw@ep-x-pooler.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"),

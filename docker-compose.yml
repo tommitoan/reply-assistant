@@ -1,0 +1,64 @@
+# Self-hosting: the app and its database in one command.
+#
+#   cp .env.example .env     (fill in the required values; see the comments there)
+#   docker compose up -d --build
+#
+# Open http://localhost:3000 (change the port with APP_PORT) and sign in with APP_PASSCODE.
+# The tables are created by the `migrate` service before the app starts, and again
+# (harmlessly) on every `up`. Data lives in the `pgdata` volume.
+#
+# For development with `npm run dev`, use compose.dev.yml instead (database only).
+name: reply-assistant
+
+x-database-url: &database-url
+  # The private network name `db`, no TLS: sslmode=disable says so on purpose.
+  DATABASE_URL: postgres://reply:${REPLY_DB_PASSWORD:?set REPLY_DB_PASSWORD in .env}@db:5432/reply?sslmode=disable
+
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: reply
+      POSTGRES_DB: reply
+      POSTGRES_PASSWORD: ${REPLY_DB_PASSWORD:?set REPLY_DB_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reply -d reply"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # No published port: only the app and the migration can reach the database.
+
+  migrate:
+    build:
+      context: .
+      target: migrator
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *database-url
+      # drizzle.config.ts refuses to change a database that is not on localhost
+      # unless told this is the one meant. It is: the `db` service above.
+      ALLOW_REMOTE_MIGRATE: "1"
+    restart: "no"
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    # Every setting in .env reaches the app; DATABASE_URL below replaces the one meant for `npm run dev`.
+    env_file: .env
+    environment:
+      <<: *database-url
+    ports:
+      - "${APP_PORT:-3000}:8080"
+
+volumes:
+  pgdata:

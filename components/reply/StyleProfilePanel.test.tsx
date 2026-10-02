@@ -161,8 +161,10 @@ describe("StyleProfilePanel", () => {
       await waitFor(() => expect(edits()).toHaveLength(1));
       expect(edits()[0].url).toBe("/api/reply/style-profile/p1");
       expect(JSON.parse(edits()[0].body!)).toEqual({ rules: ["Always use contractions.", "Open with the answer."] });
+      // Wait for the editor to close first: while it is open the new text is also
+      // inside its textarea, which would be found and then removed.
+      await waitFor(() => expect(screen.queryByRole("group", { name: /Edit the rules/ })).not.toBeInTheDocument());
       expect(await screen.findByText("Open with the answer.")).toBeInTheDocument();
-      expect(screen.queryByRole("group", { name: /Edit the rules/ })).not.toBeInTheDocument();
       expect(screen.queryByText("Rule B of 1")).not.toBeInTheDocument();
     });
 

@@ -62,6 +62,27 @@ Ghi chú ngắn về đời bạn (nghề, thói quen, chuyện mới xảy ra) 
 - **⬇ Export my notes (JSON)**: tải ghi chú của bạn (kể cả đã lưu trữ). **Ghi chú private không có trong file**
   (file chỉ ghi số lượng đã bỏ qua), gợi ý chưa duyệt và vector cũng không.
 
+### Tự chạy bằng Docker (app + database)
+
+Cách đơn giản nhất để chạy trên server hoặc máy ở nhà: một lệnh dựng database, tạo bảng rồi chạy app.
+
+```bash
+cp .env.example .env
+```
+
+Điền `.env`: `REPLY_DB_PASSWORD` (mật khẩu mạnh bất kỳ), `APP_PASSCODE`, `APP_SESSION_SECRET`, `REPLY_ANTHROPIC_API_KEY`, tùy chọn `VOYAGE_API_KEY` và `APP_PORT`. Không cần sửa `DATABASE_URL`: ở chế độ này nó được ghép từ mật khẩu và trỏ vào container `db`.
+
+```bash
+docker compose up -d --build
+docker compose ps          # app phải chuyển sang "healthy"
+```
+
+Mở `http://localhost:3000` (hoặc `APP_PORT`) rồi đăng nhập. `db` không mở cổng ra ngoài, `migrate` chạy một lần rồi thoát (migration đã áp dụng thì bỏ qua), `app` chỉ khởi động sau khi `migrate` thành công. Cập nhật: lấy code mới rồi chạy lại `docker compose up -d --build`. Dừng: `docker compose down` (giữ dữ liệu; `down -v` mới xóa).
+
+Trên server hãy đặt reverse proxy có HTTPS phía trước (Caddy, Nginx, Traefik), đừng mở cổng trực tiếp, và tắt buffer của proxy để reply hiện dần từng phần.
+
+Nếu đã có database (ví dụ Neon): chỉ build image và chạy với `DATABASE_URL` của bạn (`docker build -t reply-assistant .` rồi `docker run -d -p 3000:8080 --env-file .env reply-assistant`), migrate một lần như các bước Railway bên dưới. Postgres trong mạng riêng thì thêm `?sslmode=disable` vào cuối URL; host khác luôn dùng TLS.
+
 ### Biến môi trường
 
 Đặt trong `.env` / `.env.local` (local) hoặc Railway Variables (production). Không commit giá trị thật.

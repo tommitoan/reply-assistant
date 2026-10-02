@@ -50,7 +50,8 @@ function credentials(url: string | undefined) {
       user: decodeURIComponent(parsed.username),
       password: decodeURIComponent(parsed.password),
       database: decodeURIComponent(parsed.pathname.slice(1)),
-      ssl: target.local ? (false as const) : ("require" as const),
+      // `sslmode=disable` is how a database container on a private Docker network is addressed.
+      ssl: target.local || parsed.searchParams.get("sslmode") === "disable" ? (false as const) : ("require" as const),
     };
   } catch {
     return { url };
