@@ -94,6 +94,10 @@ docker compose up -d --build    # database, migrations, then the app
 
 Open http://localhost:3000 (set `APP_PORT` in `.env` to change it). The `migrate` service creates the tables before the app starts, the database is not published on any port, and its data lives in a Docker volume. Details: [docs/SETUP.md](docs/SETUP.md#self-host-with-docker).
 
+### Deploy online
+
+Step by step on Railway with a Neon database: [docs/DEPLOY-RAILWAY.md](docs/DEPLOY-RAILWAY.md) (Vietnamese: [DEPLOY-RAILWAY.vi.md](docs/DEPLOY-RAILWAY.vi.md)).
+
 Full setup, every environment variable, deployment, troubleshooting: [docs/SETUP.md](docs/SETUP.md). Vietnamese guide: [docs/HUONG-DAN.vi.md](docs/HUONG-DAN.vi.md).
 
 ## Testing and verification

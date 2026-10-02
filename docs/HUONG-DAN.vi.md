@@ -147,6 +147,8 @@ chứa `DATABASE_URL`, `APP_PASSCODE`, `APP_SESSION_SECRET`, rồi `npm run dev`
 
 ### Production: Railway + Neon
 
+Bản đầy đủ từng bước kèm danh sách kiểm tra và sự cố thường gặp: [DEPLOY-RAILWAY.vi.md](DEPLOY-RAILWAY.vi.md).
+
 Bạn tự làm các bước này (assistant không chạy lệnh vào database hay deploy thật):
 
 1. **Neon**: tạo database (chọn vùng gần bạn, có pgvector). Dùng một branch `dev` cho local và `main` cho dùng thật,

@@ -99,6 +99,8 @@ docker run -d --name reply-assistant -p 3000:8080 --env-file .env reply-assistan
 
 ## Deploy: Railway + Neon
 
+A fuller step-by-step version with a checklist and troubleshooting: [DEPLOY-RAILWAY.md](DEPLOY-RAILWAY.md).
+
 1. **Neon**: create a database (pgvector is available). Use one branch for local work and one for real use. Take the **direct** URL for migrations and add `?sslmode=require`.
 2. **Migrate**, from your machine, before the first deploy and again whenever `drizzle/` gains a file:
 
