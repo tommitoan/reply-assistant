@@ -122,7 +122,17 @@ export function streamGeneration(params: GenerationStreamParams): ReadableStream
       } catch (err) {
         const cancelled = abort.signal.aborted;
         const described = describeClaudeError(err);
-        if (!cancelled) console.error("[/api/reply/generate]", err);
+        if (!cancelled) {
+          console.error("[/api/reply/generate]", err);
+        } else {
+          // A cancel is not an error, but it must not be invisible either: a proxy
+          // that drops the connection looks exactly like this from in here.
+          console.warn(
+            `[/api/reply/generate] stopped: the client disconnected (request ${generationId}, ${now() - startedAt} ms in, ${
+              firstTokenMs === null ? "before the first token" : "after the first token"
+            })`,
+          );
+        }
         try {
           await repo.failGeneration(generationId, {
             status: "error",

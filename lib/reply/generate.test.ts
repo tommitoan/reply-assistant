@@ -240,8 +240,9 @@ describe("startGeneration", () => {
     expect((await readEvents(result.stream)).at(-1)).toMatchObject({ t: "error" });
   });
 
-  it("stops quietly when the client cancels", async () => {
+  it("stops without an error when the client cancels, and leaves a warning that says so", async () => {
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { repo, calls } = fakeRepo();
     const controller = new AbortController();
     async function* waiting(params: StreamReplyParams): AsyncGenerator<StreamPart> {
@@ -263,6 +264,30 @@ describe("startGeneration", () => {
 
     expect(calls.failed).toHaveLength(1);
     expect(consoleError).not.toHaveBeenCalled();
+    expect(consoleWarn).toHaveBeenCalledTimes(1);
+    expect(consoleWarn.mock.calls[0][0]).toMatch(/the client disconnected \(request gen-1, \d+ ms in, after the first token\)/);
+  });
+
+  it("says when the client disconnected before the first token", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { repo } = fakeRepo();
+    const controller = new AbortController();
+    async function* silent(params: StreamReplyParams): AsyncGenerator<StreamPart> {
+      await new Promise((_, reject) =>
+        params.signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true }),
+      );
+      yield { type: "delta", text: "never sent" };
+    }
+    const result = await startGeneration(BODY, deps({ repo, stream: silent }), controller.signal);
+    if (!result.ok) throw new Error("expected a stream");
+    const reader = result.stream.getReader();
+    await reader.read(); // meta
+    controller.abort();
+    while (!(await reader.read()).done) {
+      // drain until the stream closes
+    }
+    expect(consoleWarn.mock.calls[0][0]).toContain("before the first token");
   });
 
   describe("better regenerate", () => {
