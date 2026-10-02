@@ -14,12 +14,12 @@ describe("POST /api/reply/notes/import-preview validation", () => {
   it("rejects an empty diary", async () => {
     const res = await POST(post(JSON.stringify({ text: "" })));
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toContain("Paste the diary first.");
+    expect((await res.json()).error).toContain("Hãy dán nhật ký vào trước đã.");
   });
 
   it("rejects a diary over the limit, and says how to go on", async () => {
     const res = await POST(post(JSON.stringify({ text: "x".repeat(MAX_DIARY_CHARS + 1) })));
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toContain("Split it in parts");
+    expect((await res.json()).error).toContain("Hãy chia thành nhiều phần");
   });
 });

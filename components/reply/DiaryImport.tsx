@@ -51,9 +51,9 @@ export default function DiaryImport({ onSaved }: { onSaved: (notes: NoteRecord[]
     try {
       const drafts = await previewDiary(diary.trim());
       setItems(drafts.map(toItem));
-      if (drafts.length === 0) setProblem("The model found nothing worth keeping in that text.");
+      if (drafts.length === 0) setProblem("Mô hình không tìm thấy gì đáng giữ trong đoạn văn này.");
     } catch (err) {
-      setProblem(err instanceof Error ? err.message : "Could not split the diary.");
+      setProblem(err instanceof Error ? err.message : "Không tách được nhật ký.");
     } finally {
       setBusy(null);
     }
@@ -79,25 +79,25 @@ export default function DiaryImport({ onSaved }: { onSaved: (notes: NoteRecord[]
       setDiary("");
       onSaved(saved);
     } catch (err) {
-      setProblem(err instanceof Error ? err.message : "Could not save the notes.");
+      setProblem(err instanceof Error ? err.message : "Không lưu được các ghi chú.");
     } finally {
       setBusy(null);
     }
   }
 
   return (
-    <section aria-label="Import a diary" className={`${CARD} space-y-3`}>
-      <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-100">Import a diary</h2>
+    <section aria-label="Nhập từ nhật ký" className={`${CARD} space-y-3`}>
+      <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-100">Nhập từ nhật ký</h2>
 
       {items === null ? (
         <>
           <p className="text-xs text-stone-500 dark:text-stone-400">
-            Paste a diary or a long text. A model splits it into separate notes for you to review; nothing is saved until you
-            say so. The text you paste here is sent to the model to split it, so for anything that must stay out of every model,
-            add a 🔒 private note by hand instead.
+            Dán nhật ký hoặc một đoạn văn dài. Mô hình AI sẽ tách thành từng ghi chú để bạn xem lại; chưa lưu gì cho đến khi bạn
+            bấm lưu. Đoạn bạn dán ở đây được gửi cho mô hình để tách, nên với chuyện không muốn gửi cho bất kỳ mô hình nào, hãy
+            tự thêm một ghi chú 🔒 riêng tư ở khung phía trên.
           </p>
           <label htmlFor={diaryId} className="sr-only">
-            The diary to split into notes
+            Nhật ký cần tách thành ghi chú
           </label>
           <textarea
             id={diaryId}
@@ -111,13 +111,13 @@ export default function DiaryImport({ onSaved }: { onSaved: (notes: NoteRecord[]
             {diary.length} / {MAX_DIARY_CHARS}
           </p>
           <button type="button" onClick={split} disabled={diary.trim().length === 0 || tooLong || busy !== null} className={BUTTON}>
-            {busy === "split" ? "Splitting…" : "Split into notes"}
+            {busy === "split" ? "Đang tách…" : "Tách thành ghi chú"}
           </button>
         </>
       ) : (
         <>
           <p className="text-xs text-stone-500 dark:text-stone-400">
-            {items.length} proposed. Untick what you do not want, and fix anything that is wrong.
+            {items.length} ghi chú được đề xuất. Bỏ chọn những ghi chú bạn không muốn giữ, và sửa chỗ nào chưa đúng.
           </p>
           <ul className="space-y-3">
             {items.map((item) => (
@@ -130,16 +130,16 @@ export default function DiaryImport({ onSaved }: { onSaved: (notes: NoteRecord[]
                     type="checkbox"
                     checked={item.keep}
                     onChange={(e) => change(item.key, { keep: e.target.checked })}
-                    aria-label={`Keep this note: ${item.text.slice(0, 40)}`}
+                    aria-label={`Giữ ghi chú này: ${item.text.slice(0, 40)}`}
                   />
-                  Keep
+                  Giữ
                 </label>
                 <textarea
                   value={item.text}
                   onChange={(e) => change(item.key, { text: e.target.value })}
                   maxLength={MAX_NOTE_CHARS}
                   rows={2}
-                  aria-label="Note text"
+                  aria-label="Nội dung ghi chú"
                   className={FIELD}
                 />
                 <textarea
@@ -147,15 +147,15 @@ export default function DiaryImport({ onSaved }: { onSaved: (notes: NoteRecord[]
                   onChange={(e) => change(item.key, { textEn: e.target.value })}
                   disabled={item.private}
                   rows={2}
-                  aria-label="English version"
-                  placeholder="English version"
+                  aria-label="Bản tiếng Anh"
+                  placeholder="Bản tiếng Anh"
                   className={FIELD}
                 />
                 <div className="flex flex-wrap items-center gap-3 text-sm text-stone-700 dark:text-stone-200">
                   <select
                     value={item.kind}
                     onChange={(e) => change(item.key, { kind: e.target.value as NoteKind })}
-                    aria-label="Kind"
+                    aria-label="Loại"
                     className={SELECT}
                   >
                     {NOTE_KINDS.map((value) => (
@@ -169,14 +169,14 @@ export default function DiaryImport({ onSaved }: { onSaved: (notes: NoteRecord[]
                       type="date"
                       value={item.happenedOn}
                       onChange={(e) => change(item.key, { happenedOn: e.target.value })}
-                      aria-label="Date"
+                      aria-label="Ngày xảy ra"
                       className={SELECT}
                     />
                   )}
                   <select
                     value={item.scope}
                     onChange={(e) => change(item.key, { scope: e.target.value as NoteScope })}
-                    aria-label="Use in"
+                    aria-label="Dùng khi"
                     className={SELECT}
                   >
                     {NOTE_SCOPES.map((value) => (
@@ -191,7 +191,7 @@ export default function DiaryImport({ onSaved }: { onSaved: (notes: NoteRecord[]
                       checked={item.private}
                       onChange={(e) => change(item.key, { private: e.target.checked })}
                     />
-                    🔒 Private
+                    🔒 Riêng tư
                   </label>
                 </div>
               </li>
@@ -199,10 +199,10 @@ export default function DiaryImport({ onSaved }: { onSaved: (notes: NoteRecord[]
           </ul>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={save} disabled={kept.length === 0 || busy !== null} className={PRIMARY}>
-              {busy === "save" ? "Saving…" : `Save ${kept.length} ${kept.length === 1 ? "note" : "notes"}`}
+              {busy === "save" ? "Đang lưu…" : `Lưu ${kept.length} ghi chú`}
             </button>
             <button type="button" onClick={() => setItems(null)} disabled={busy !== null} className={BUTTON}>
-              Cancel
+              Hủy
             </button>
           </div>
         </>

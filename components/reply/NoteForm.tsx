@@ -43,7 +43,7 @@ export default function NoteForm({ onSaved }: { onSaved: (note: NoteRecord) => v
       setScope(suggestion.scope);
       setHappenedOn(suggestion.happenedOn ?? "");
     } catch (err) {
-      setProblem(err instanceof Error ? err.message : "Could not suggest an English version.");
+      setProblem(err instanceof Error ? err.message : "Không gợi ý được bản tiếng Anh.");
     } finally {
       setBusy(null);
     }
@@ -73,44 +73,47 @@ export default function NoteForm({ onSaved }: { onSaved: (note: NoteRecord) => v
       setPinned(false);
       onSaved(note);
     } catch (err) {
-      setProblem(err instanceof Error ? err.message : "Could not save the note.");
+      setProblem(err instanceof Error ? err.message : "Không lưu được ghi chú.");
     } finally {
       setBusy(null);
     }
   }
 
   return (
-    <section aria-label="Add a note" className={`${CARD} space-y-3`}>
-      <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-100">Add a note</h2>
+    <section aria-label="Thêm ghi chú" className={`${CARD} space-y-3`}>
+      <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-100">Thêm ghi chú</h2>
 
       <div>
         <label htmlFor={textId} className="mb-1 block text-xs font-medium text-stone-500 dark:text-stone-400">
-          What is true about you? (Vietnamese or English)
+          Điều gì đúng về bạn? (viết tiếng Việt hoặc tiếng Anh đều được)
         </label>
         <textarea
           id={textId}
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={3}
-          placeholder="Ví dụ: Tháng 9 mình mới dọn sang chung cư mới vì bếp cũ ám mùi."
+          placeholder="Ví dụ: Tháng 9 mình mới chuyển sang căn hộ mới ở Quận 7."
           className={FIELD}
         />
-        <p className={`mt-1 text-right text-xs ${tooLong ? "text-red-600" : "text-stone-400"}`}>
-          {text.length} / {MAX_NOTE_CHARS}
+        <p className="mt-1 flex flex-wrap justify-between gap-x-3 text-xs text-stone-400">
+          <span>Mỗi ghi chú một ý, viết ngắn, ngôi &quot;mình&quot;. Sự kiện nên kèm tháng.</span>
+          <span className={tooLong ? "text-red-600" : undefined}>
+            {text.length} / {MAX_NOTE_CHARS}
+          </span>
         </p>
       </div>
 
       <label className="flex items-start gap-2 text-sm text-stone-700 dark:text-stone-200">
         <input type="checkbox" checked={isPrivate} onChange={(e) => changePrivate(e.target.checked)} className="mt-1" />
         <span>
-          🔒 Private
+          🔒 Riêng tư
           <span className="block text-xs text-stone-500 dark:text-stone-400">{PRIVATE_HINT}</span>
         </span>
       </label>
 
       <div>
         <label htmlFor={englishId} className="mb-1 block text-xs font-medium text-stone-500 dark:text-stone-400">
-          English version (used to match English messages; leave empty and it is written for you)
+          Bản tiếng Anh (dùng để khớp với tin nhắn tiếng Anh; để trống thì app tự viết cho bạn)
         </label>
         <textarea
           id={englishId}
@@ -119,14 +122,14 @@ export default function NoteForm({ onSaved }: { onSaved: (note: NoteRecord) => v
           disabled={isPrivate}
           maxLength={MAX_NOTE_EN_CHARS}
           rows={2}
-          placeholder={isPrivate ? "Not made for a private note." : "I moved to a new apartment in September."}
+          placeholder={isPrivate ? "Ghi chú riêng tư không có bản tiếng Anh." : "I moved to a new apartment in September."}
           className={FIELD}
         />
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-1.5 text-sm text-stone-700 dark:text-stone-200">
-          Kind
+          Loại
           <select value={kind} onChange={(e) => setKind(e.target.value as NoteKind)} className={SELECT}>
             {NOTE_KINDS.map((value) => (
               <option key={value} value={value}>
@@ -137,12 +140,12 @@ export default function NoteForm({ onSaved }: { onSaved: (note: NoteRecord) => v
         </label>
         {kind === "event" && (
           <label className="flex items-center gap-1.5 text-sm text-stone-700 dark:text-stone-200">
-            Date
+            Ngày xảy ra
             <input type="date" value={happenedOn} onChange={(e) => setHappenedOn(e.target.value)} className={SELECT} />
           </label>
         )}
         <label className="flex items-center gap-1.5 text-sm text-stone-700 dark:text-stone-200">
-          Use in
+          Dùng khi
           <select value={scope} onChange={(e) => setScope(e.target.value as NoteScope)} className={SELECT}>
             {NOTE_SCOPES.map((value) => (
               <option key={value} value={value}>
@@ -153,7 +156,7 @@ export default function NoteForm({ onSaved }: { onSaved: (note: NoteRecord) => v
         </label>
         <label className="flex items-center gap-1.5 text-sm text-stone-700 dark:text-stone-200">
           <input type="checkbox" checked={pinned} disabled={isPrivate} onChange={(e) => setPinned(e.target.checked)} />
-          📌 Always use (pin)
+          📌 Luôn dùng (ghim)
         </label>
       </div>
 
@@ -162,13 +165,13 @@ export default function NoteForm({ onSaved }: { onSaved: (note: NoteRecord) => v
           type="button"
           onClick={suggest}
           disabled={isPrivate || trimmed.length === 0 || tooLong || busy !== null}
-          title={isPrivate ? "A private note is never sent to a model." : "Ask the model for an English version and tags"}
+          title={isPrivate ? "Ghi chú riêng tư không bao giờ được gửi cho mô hình." : "Nhờ mô hình viết bản tiếng Anh và gợi ý loại, phạm vi dùng"}
           className={BUTTON}
         >
-          {busy === "suggest" ? "Suggesting…" : "✨ Suggest English + tags"}
+          {busy === "suggest" ? "Đang gợi ý…" : "✨ Gợi ý bản tiếng Anh + nhãn"}
         </button>
         <button type="button" onClick={save} disabled={trimmed.length === 0 || tooLong || busy !== null} className={PRIMARY}>
-          {busy === "save" ? "Saving…" : "Save note"}
+          {busy === "save" ? "Đang lưu…" : "Lưu ghi chú"}
         </button>
       </div>
 

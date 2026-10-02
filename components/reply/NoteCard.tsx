@@ -9,7 +9,7 @@ import { CARD, ERROR, FIELD, PRIMARY, SCOPE_LABELS, SELECT, SMALL } from "./note
 const CHIP = "rounded bg-stone-100 px-1.5 py-0.5 text-[11px] font-medium text-stone-600 dark:bg-stone-700 dark:text-stone-300";
 
 function dateLabel(note: NoteRecord): string {
-  return note.kind === "event" ? (note.happenedOn ? `event · ${note.happenedOn}` : "event") : "fact";
+  return note.kind === "event" ? (note.happenedOn ? `sự kiện · ${note.happenedOn}` : "sự kiện") : "thông tin";
 }
 
 // One saved note, with the actions that change it. `onChange` resolves true
@@ -61,14 +61,14 @@ export default function NoteCard({
   return (
     <article id={`note-${note.id}`} className={`${CARD} space-y-2 ${archived ? "opacity-60" : ""}`}>
       <header className="flex flex-wrap items-center gap-1.5">
-        {note.pinned && <span className={CHIP}>📌 pinned</span>}
-        {note.private && <span className={CHIP}>🔒 private</span>}
+        {note.pinned && <span className={CHIP}>📌 đã ghim</span>}
+        {note.private && <span className={CHIP}>🔒 riêng tư</span>}
         <span className={CHIP}>{SCOPE_LABELS[note.scope]}</span>
         <span className={CHIP}>{dateLabel(note)}</span>
-        {archived && <span className={CHIP}>archived</span>}
+        {archived && <span className={CHIP}>đã lưu trữ</span>}
         {!note.indexed && (
-          <span className={CHIP} title="Saved while the embedding service was unavailable. It cannot be found by meaning yet.">
-            not searchable yet
+          <span className={CHIP} title="Lưu lúc dịch vụ embedding bị lỗi, nên chưa thể tìm thấy theo ý nghĩa.">
+            chưa tìm kiếm được
           </span>
         )}
       </header>
@@ -80,7 +80,7 @@ export default function NoteCard({
             onChange={(e) => setText(e.target.value)}
             maxLength={MAX_NOTE_CHARS}
             rows={3}
-            aria-label="Note text"
+            aria-label="Nội dung ghi chú"
             className={FIELD}
           />
           {!note.private && (
@@ -89,17 +89,17 @@ export default function NoteCard({
               onChange={(e) => setTextEn(e.target.value)}
               maxLength={MAX_NOTE_EN_CHARS}
               rows={2}
-              aria-label="English version"
-              placeholder="English version (leave empty to have it written again if the text changed)"
+              aria-label="Bản tiếng Anh"
+              placeholder="Bản tiếng Anh (để trống thì app viết lại nếu bạn đã sửa nội dung)"
               className={FIELD}
             />
           )}
           <div className="flex gap-2">
             <button type="button" onClick={saveEdit} disabled={busy || text.trim().length === 0} className={PRIMARY}>
-              {busy ? "Saving…" : "Save"}
+              {busy ? "Đang lưu…" : "Lưu"}
             </button>
             <button type="button" onClick={() => setEditing(false)} disabled={busy} className={SMALL}>
-              Cancel
+              Hủy
             </button>
           </div>
         </div>
@@ -117,25 +117,25 @@ export default function NoteCard({
       {!editing && (
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <button type="button" onClick={startEdit} disabled={busy} className={SMALL}>
-            ✏️ Edit
+            ✏️ Sửa
           </button>
           <button
             type="button"
             onClick={() => void run(() => onChange({ pinned: !note.pinned }))}
             disabled={busy || note.private || archived}
             aria-pressed={note.pinned}
-            title={note.private ? "A private note is never used, so it cannot be pinned." : undefined}
+            title={note.private ? "Ghi chú riêng tư không bao giờ được dùng, nên không ghim được." : undefined}
             className={SMALL}
           >
-            {note.pinned ? "📌 Unpin" : "📌 Pin"}
+            {note.pinned ? "📌 Bỏ ghim" : "📌 Ghim"}
           </button>
           <label className="flex items-center gap-1 text-xs text-stone-500 dark:text-stone-400">
-            Use in
+            Dùng khi
             <select
               value={note.scope}
               onChange={(e) => void run(() => onChange({ scope: e.target.value as NoteScope }))}
               disabled={busy}
-              aria-label="Use in"
+              aria-label="Dùng khi"
               className={`${SELECT} !py-0.5 text-xs`}
             >
               {NOTE_SCOPES.map((value) => (
@@ -152,7 +152,7 @@ export default function NoteCard({
             aria-pressed={note.private}
             className={SMALL}
           >
-            {note.private ? "🔓 Make usable" : "🔒 Make private"}
+            {note.private ? "🔓 Cho phép dùng" : "🔒 Đặt riêng tư"}
           </button>
           <button
             type="button"
@@ -160,33 +160,33 @@ export default function NoteCard({
             disabled={busy}
             className={SMALL}
           >
-            {archived ? "Restore" : "Archive"}
+            {archived ? "Khôi phục" : "Lưu trữ"}
           </button>
           <button type="button" onClick={() => setConfirming("delete")} disabled={busy} className={SMALL}>
-            Delete
+            Xóa
           </button>
         </div>
       )}
 
       {confirming === "delete" && (
-        <p role="alertdialog" aria-label="Delete this note?" className={`${ERROR} flex flex-wrap items-center gap-2`}>
-          <span className="flex-1">Delete this note and everything made from it? This cannot be undone.</span>
+        <p role="alertdialog" aria-label="Xóa ghi chú này?" className={`${ERROR} flex flex-wrap items-center gap-2`}>
+          <span className="flex-1">Xóa ghi chú này và mọi thứ được tạo ra từ nó? Không thể hoàn tác.</span>
           <button type="button" className={SMALL} disabled={busy} onClick={() => void run(onDelete)}>
-            Delete it
+            Xóa luôn
           </button>
           <button type="button" className={SMALL} disabled={busy} onClick={() => setConfirming(null)}>
-            Keep it
+            Giữ lại
           </button>
         </p>
       )}
       {confirming === "public" && (
         <p
           role="alertdialog"
-          aria-label="Make this note usable?"
+          aria-label="Cho phép dùng ghi chú này?"
           className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300"
         >
           <span className="flex-1">
-            Its text will be sent to the AI model to write an English version and make it searchable, and replies may use it.
+            Nội dung ghi chú sẽ được gửi cho mô hình AI để viết bản tiếng Anh và giúp tìm kiếm được, và các bản trả lời có thể dùng nó.
           </span>
           <button
             type="button"
@@ -200,10 +200,10 @@ export default function NoteCard({
               })
             }
           >
-            Make usable
+            Cho phép dùng
           </button>
           <button type="button" className={SMALL} disabled={busy} onClick={() => setConfirming(null)}>
-            Keep private
+            Giữ riêng tư
           </button>
         </p>
       )}

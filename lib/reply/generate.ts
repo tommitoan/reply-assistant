@@ -176,11 +176,11 @@ async function loadThread(
   threads: ThreadDeps | undefined,
 ): Promise<ThreadContext | { error: StartResult }> {
   const missing = (status: 400 | 404, error: string) => ({ error: { ok: false, status, error } as StartResult });
-  if (!threads || !body.conversationId) return missing(400, "Conversation threads are not available.");
+  if (!threads || !body.conversationId) return missing(400, "Tính năng cuộc trò chuyện hiện chưa dùng được.");
 
   if (body.mode === "en_reply") {
     const outcome = await threads.repo.mergePaste(body.conversationId, body.input, threads.selfNames);
-    if (!outcome) return missing(404, "That conversation was not found.");
+    if (!outcome) return missing(404, "Không tìm thấy cuộc trò chuyện này.");
     return {
       conversation: outcome.conversation,
       messages: outcome.messages,
@@ -191,7 +191,7 @@ async function loadThread(
   }
 
   const conversation = await threads.repo.getConversation(body.conversationId);
-  if (!conversation) return missing(404, "That conversation was not found.");
+  if (!conversation) return missing(404, "Không tìm thấy cuộc trò chuyện này.");
   const messages = await threads.repo.getMessages(body.conversationId);
   return { conversation, messages, transcript: buildTranscript(messages), totalChars: totalCharsOf(messages) };
 }
@@ -293,12 +293,12 @@ export async function startGeneration(
     return {
       ok: false,
       status: 429,
-      error: "The daily spending limit for replies is reached. It resets at 00:00 UTC.",
+      error: "Đã hết hạn mức chi tiêu trong ngày. Hạn mức được đặt lại lúc 00:00 UTC (7:00 sáng giờ Việt Nam).",
     };
   }
 
   if (body.parentGenerationId && !(await deps.repo.generationExists(body.parentGenerationId))) {
-    return { ok: false, status: 400, error: "The request to redo was not found." };
+    return { ok: false, status: 400, error: "Không tìm thấy yêu cầu cần viết lại." };
   }
 
   const thread = body.conversationId ? await loadThread(body, deps.threads) : null;

@@ -88,6 +88,7 @@ describe("rebuildStyleProfile", () => {
     expect(result).toMatchObject({ ok: false, status: 422 });
     expect(complete).not.toHaveBeenCalled();
     expect(created).toHaveLength(0);
+    expect(result.ok === false && result.error).toMatch(/mới có 1 trên 5/);
   });
 
   it("makes you wait when a profile was just built", async () => {
@@ -105,7 +106,7 @@ describe("rebuildStyleProfile", () => {
     const { deps, complete } = fakes({ spent: 2 });
     const result = await rebuildStyleProfile(deps);
     expect(result).toMatchObject({ ok: false, status: 429 });
-    expect(result.ok === false && result.error).toMatch(/spending limit/);
+    expect(result.ok === false && result.error).toMatch(/chi tiêu tối đa/);
     expect(complete).not.toHaveBeenCalled();
   });
 

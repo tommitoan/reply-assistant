@@ -20,20 +20,20 @@ describe("MemoryDisclosure", () => {
         ]}
       />,
     );
-    expect(screen.getByText("Used 2 memories")).toBeInTheDocument();
+    expect(screen.getByText("Đã dùng 2 mục trí nhớ")).toBeInTheDocument();
     expect(screen.getByText("Mình đến muộn nhé.")).toBeInTheDocument();
     expect(screen.getByText("Cảm ơn bạn.")).toBeInTheDocument();
   });
 
   it("uses the singular for one memory", () => {
     render(<MemoryDisclosure status="used" memories={[{ id: "a", input: "x" }]} />);
-    expect(screen.getByText("Used 1 memory")).toBeInTheDocument();
+    expect(screen.getByText("Đã dùng 1 mục trí nhớ")).toBeInTheDocument();
   });
 
   it.each([
-    ["none", /no similar earlier replies/i],
-    ["skipped", /memory was skipped/i],
-    ["unavailable", /not set up on this server/i],
+    ["none", /chưa có bản nháp nào tương tự/i],
+    ["skipped", /đã bỏ qua trí nhớ/i],
+    ["unavailable", /chưa bật trí nhớ/i],
   ] as const)("explains the %s case in plain words", (status, message) => {
     render(<MemoryDisclosure status={status} memories={[]} />);
     expect(screen.getByText(message)).toBeInTheDocument();

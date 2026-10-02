@@ -1,42 +1,60 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { LoadedOption } from "@/lib/reply/feedback-state";
 import type { RecentGeneration } from "@/lib/reply/types";
-import { shortModelName } from "@/lib/reply/format";
-import DevelopableOption, { type DevelopSettings } from "./DevelopableOption";
-import ReplyOptionCard from "./ReplyOptionCard";
-import { actionsFor } from "./optionActions";
-import type { OptionFeedbackStore } from "./useOptionFeedback";
+import { relativeTime } from "./relativeTime";
 
-const INPUT_PREVIEW_CHARS = 80;
+const INPUT_PREVIEW_CHARS = 90;
 
 function preview(text: string): string {
   const flat = text.replace(/\s+/g, " ").trim();
   return flat.length > INPUT_PREVIEW_CHARS ? `${flat.slice(0, INPUT_PREVIEW_CHARS)}…` : flat;
 }
 
-// Earlier replies, so they can be rated, edited or marked as used after the
-// page was closed or the next request started.
+// What the feedback store needs to know about earlier replies so they can be
+// rated, edited or marked as used.
+export function feedbackRowsOf(generations: RecentGeneration[]): LoadedOption[] {
+  return generations.flatMap((generation) => [
+    ...generation.options.map((option) => ({
+      id: option.id,
+      generationId: generation.id,
+      rating: option.rating,
+      editedText: option.editedText,
+      chosen: option.chosen,
+    })),
+    // Developed versions answer the same turn as the reply they grew from.
+    ...generation.developed.flatMap((group) =>
+      group.options.map((option) => ({
+        id: option.id,
+        generationId: group.generationId,
+        familyId: generation.id,
+        rating: option.rating,
+        editedText: option.editedText,
+        chosen: option.chosen,
+      })),
+    ),
+  ]);
+}
+
+// The earlier requests of the open conversation (or of Quick translate), as a
+// short list in the side bar. Picking one hands it to the chat to show.
 export default function RecentGenerations({
   scope,
   refreshKey,
-  excludeId,
-  store,
-  develop,
+  activeId,
+  onOpen,
 }: {
   // "none" for requests made outside any thread, or one thread's id.
   scope: string;
   // Changing this reloads the list (a new generation just finished).
   refreshKey: string | null;
-  // The generation already shown above, so it is not listed twice.
-  excludeId: string | null;
-  store: OptionFeedbackStore;
-  // When given, each reply gets a Develop button that uses these settings.
-  develop?: DevelopSettings;
+  // The request being shown from the list, if any.
+  activeId: string | null;
+  onOpen: (generation: RecentGeneration) => void;
 }) {
   const [generations, setGenerations] = useState<RecentGeneration[] | null>(null);
   const [failed, setFailed] = useState(false);
-  const { load } = store;
 
   useEffect(() => {
     let cancelled = false;
@@ -47,28 +65,6 @@ export default function RecentGenerations({
         if (cancelled) return;
         setGenerations(body.generations);
         setFailed(false);
-        load(
-          body.generations.flatMap((generation) => [
-            ...generation.options.map((option) => ({
-              id: option.id,
-              generationId: generation.id,
-              rating: option.rating,
-              editedText: option.editedText,
-              chosen: option.chosen,
-            })),
-            // Developed versions answer the same turn as the reply they grew from.
-            ...generation.developed.flatMap((group) =>
-              group.options.map((option) => ({
-                id: option.id,
-                generationId: group.generationId,
-                familyId: generation.id,
-                rating: option.rating,
-                editedText: option.editedText,
-                chosen: option.chosen,
-              })),
-            ),
-          ]),
-        );
       })
       .catch(() => {
         if (!cancelled) setFailed(true);
@@ -76,51 +72,34 @@ export default function RecentGenerations({
     return () => {
       cancelled = true;
     };
-  }, [scope, refreshKey, load]);
-
-  const visible = (generations ?? []).filter((generation) => generation.id !== excludeId);
+  }, [scope, refreshKey]);
 
   if (failed && generations === null) {
-    return <p className="text-xs text-stone-400 dark:text-stone-500">Could not load recent replies.</p>;
+    return <p className="px-3 text-xs text-stone-400 dark:text-stone-500">Không tải được các bản trả lời gần đây.</p>;
   }
-  if (visible.length === 0) return null;
+  if (!generations || generations.length === 0) return null;
 
   return (
-    <section aria-label="Recent replies" className="space-y-2">
-      <h2 className="text-sm font-semibold text-stone-700 dark:text-stone-300">Recent replies</h2>
-      {visible.map((generation) => (
-        <details
+    <section aria-label="Gần đây" className="space-y-1">
+      <h2 className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-wide text-stone-400 dark:text-stone-500">Gần đây</h2>
+      {generations.map((generation) => (
+        <button
           key={generation.id}
-          className="rounded-xl border border-stone-200 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-800"
+          type="button"
+          onClick={() => onOpen(generation)}
+          aria-current={activeId === generation.id ? "true" : undefined}
+          title={generation.inputText}
+          className={`block w-full rounded-xl px-3 py-2 text-left transition ${
+            activeId === generation.id
+              ? "bg-stone-200/70 text-stone-900 dark:bg-stone-800 dark:text-stone-50"
+              : "text-stone-600 hover:bg-stone-200/50 dark:text-stone-300 dark:hover:bg-stone-800/70"
+          }`}
         >
-          <summary className="cursor-pointer p-3 text-sm text-stone-600 dark:text-stone-300">
-            <span className="font-medium">{preview(generation.inputText)}</span>
-            <span className="ml-2 text-xs text-stone-400 dark:text-stone-500">
-              {generation.context} · {shortModelName(generation.model)} ·{" "}
-              {new Date(generation.createdAt).toLocaleString()}
-            </span>
-          </summary>
-          <div className="space-y-3 p-3 pt-0">
-            {generation.options.map((option) =>
-              develop ? (
-                <DevelopableOption
-                  key={option.id}
-                  option={{ id: option.id, generationId: generation.id, variant: option.variant, text: option.text }}
-                  store={store}
-                  settings={develop}
-                  developed={generation.developed.filter((group) => group.ofOptionId === option.id)}
-                />
-              ) : (
-                <ReplyOptionCard
-                  key={option.id}
-                  variant={option.variant}
-                  text={option.text}
-                  actions={actionsFor(store, option.id)}
-                />
-              ),
-            )}
-          </div>
-        </details>
+          <span className="line-clamp-2 text-[13px] font-medium">{preview(generation.inputText)}</span>
+          <span className="mt-0.5 block text-[11px] opacity-70">
+            {generation.context === "work" ? "💼" : "☕"} · {relativeTime(generation.createdAt)}
+          </span>
+        </button>
       ))}
     </section>
   );

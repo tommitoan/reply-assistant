@@ -41,7 +41,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     payload = await req.json();
   } catch {
-    return jsonError("Invalid JSON body.", 400);
+    return jsonError("Dữ liệu gửi lên không hợp lệ.", 400);
   }
 
   // A body with a `refine` part develops an existing reply; anything else is a new request.
@@ -56,7 +56,7 @@ export async function POST(req: Request): Promise<Response> {
     env = getReplyEnv();
   } catch (err) {
     console.error("[/api/reply/generate]", err);
-    return jsonError("The reply assistant is not configured on this server.", 503);
+    return jsonError("Reply Assistant chưa được cấu hình trên máy chủ này.", 503);
   }
 
   // Work queued while the response streams runs once it has been sent.
@@ -104,10 +104,10 @@ export async function POST(req: Request): Promise<Response> {
       return streamResponse(result.stream);
     } catch (err) {
       console.error("[/api/reply/generate]", err);
-      return jsonError("Could not start the request. Try again.", 500);
+      return jsonError("Không bắt đầu được yêu cầu. Bạn thử lại nhé.", 500);
     }
   }
-  if (!parsed?.success) return jsonError("Invalid request.", 400);
+  if (!parsed?.success) return jsonError("Yêu cầu không hợp lệ.", 400);
 
   try {
     const db = getDb();
@@ -172,6 +172,6 @@ export async function POST(req: Request): Promise<Response> {
     return streamResponse(result.stream);
   } catch (err) {
     console.error("[/api/reply/generate]", err);
-    return jsonError("Could not start the request. Try again.", 500);
+    return jsonError("Không bắt đầu được yêu cầu. Bạn thử lại nhé.", 500);
   }
 }

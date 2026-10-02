@@ -17,14 +17,14 @@ export interface OptionFeedbackStore {
 }
 
 async function failureMessage(res: Response): Promise<string> {
-  if (res.status === 401) return "Your session expired. Reload the page to sign in again.";
+  if (res.status === 401) return "Phiên đăng nhập đã hết hạn. Hãy tải lại trang để đăng nhập lại.";
   try {
     const body = (await res.json()) as { error?: unknown };
     if (typeof body.error === "string") return body.error;
   } catch {
     // Not JSON; use the generic message.
   }
-  return "Could not save that. Try again.";
+  return "Không lưu được. Bạn thử lại nhé.";
 }
 
 // Keeps ratings, edits and "used" marks for the options on screen. A change
@@ -66,7 +66,7 @@ export function useOptionFeedback(
       onSavedRef.current?.(id, patch);
       return true;
     } catch {
-      dispatch({ type: "failed", id, error: "Could not save that. Check the connection and try again." });
+      dispatch({ type: "failed", id, error: "Không lưu được. Hãy kiểm tra kết nối rồi thử lại." });
       return false;
     } finally {
       inFlight.current.delete(id);

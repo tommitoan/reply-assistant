@@ -7,7 +7,7 @@ const INITIAL_STATE: LoginState = { error: null };
 
 export default function LoginForm({ next, configured }: { next: string; configured: boolean }) {
   const [state, formAction, pending] = useActionState(login, INITIAL_STATE);
-  const error = configured ? state.error : "Login is not configured on this server.";
+  const error = configured ? state.error : "Máy chủ này chưa được cấu hình đăng nhập.";
 
   return (
     <form action={formAction} className="space-y-4">
@@ -17,7 +17,7 @@ export default function LoginForm({ next, configured }: { next: string; configur
           htmlFor="passcode"
           className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300"
         >
-          Passcode
+          Mật khẩu
         </label>
         <input
           id="passcode"
@@ -43,7 +43,7 @@ export default function LoginForm({ next, configured }: { next: string; configur
         disabled={!configured || pending}
         className="w-full rounded-xl bg-accent-600 px-6 py-3 font-medium text-white shadow-sm transition hover:bg-accent-700 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {pending ? "Checking…" : "Sign in"}
+        {pending ? "Đang kiểm tra…" : "Đăng nhập"}
       </button>
     </form>
   );

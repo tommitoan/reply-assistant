@@ -23,7 +23,7 @@ const newsreader = Newsreader({
 
 export const metadata: Metadata = {
   title: "Reply Assistant",
-  description: "Drafts English replies in your own voice, from a Vietnamese idea or a pasted chat.",
+  description: "Viết bản nháp trả lời tiếng Anh theo giọng của bạn, từ một ý tiếng Việt hoặc đoạn chat dán vào.",
 };
 
 // Applies the persisted/system theme to <html> before hydration so there is
@@ -46,17 +46,21 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="vi"
       className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
       </head>
-      <body className="min-h-full">
+      <body className="h-dvh overflow-hidden">
         <ThemeToggle />
-        <AppHeader />
-        {children}
+        {/* The page is a fixed-height shell: the top bar stays, and each page scrolls (or, for the
+            chat, manages its own scrolling) inside the remaining space. */}
+        <div className="flex h-full flex-col">
+          <AppHeader />
+          <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+        </div>
       </body>
     </html>
   );

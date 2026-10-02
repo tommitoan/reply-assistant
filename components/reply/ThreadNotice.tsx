@@ -3,10 +3,10 @@
 export default function ThreadNotice({ added, skipped }: { added: number; skipped: number }) {
   const message =
     added > 0
-      ? `Added ${added} new ${added === 1 ? "message" : "messages"} to the conversation${
-          skipped > 0 ? ` (${skipped} already there)` : ""
+      ? `Đã thêm ${added} tin nhắn mới vào cuộc trò chuyện${
+          skipped > 0 ? ` (${skipped} tin đã có sẵn)` : ""
         }.`
-      : "Nothing new in that paste: it is already in the conversation.";
+      : "Phần vừa dán không có gì mới: tất cả đã có trong cuộc trò chuyện.";
   return (
     <p role="status" className="text-xs text-stone-500 dark:text-stone-400">
       {message}

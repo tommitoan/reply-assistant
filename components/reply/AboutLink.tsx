@@ -23,13 +23,13 @@ export default function AboutLink({ className, current }: { className?: string; 
 
   return (
     <Link href="/about" className={className} aria-current={current ? "page" : undefined}>
-      About me
+      Về tôi
       {waiting > 0 && (
         <span
-          aria-label={`${waiting} suggested ${waiting === 1 ? "note" : "notes"} waiting`}
+          aria-label={`${waiting} ghi chú gợi ý đang chờ duyệt`}
           className="ml-1.5 rounded-full bg-accent-100 px-1.5 py-0.5 text-[11px] font-semibold text-accent-800 dark:bg-accent-900 dark:text-accent-100"
         >
-          {waiting} new
+          {waiting} mới
         </span>
       )}
     </Link>

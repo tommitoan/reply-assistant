@@ -19,19 +19,19 @@ describe("PATCH /api/reply/options/[id] validation", () => {
   it("answers 404 for an id that is not a uuid, without reading the body", async () => {
     const res = await patch("12", "{}");
     expect(res.status).toBe(404);
-    expect(await res.json()).toEqual({ error: "That reply was not found." });
+    expect(await res.json()).toEqual({ error: "Không tìm thấy bản nháp này." });
   });
 
   it("rejects a body that is not JSON", async () => {
     const res = await patch(VALID_ID, "{nope");
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "Invalid JSON body." });
+    expect(await res.json()).toEqual({ error: "Dữ liệu gửi lên không hợp lệ." });
   });
 
   it("rejects an empty update", async () => {
     const res = await patch(VALID_ID, "{}");
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "Nothing to update." });
+    expect(await res.json()).toEqual({ error: "Không có gì để cập nhật." });
   });
 
   it("rejects an unknown rating", async () => {
@@ -42,6 +42,6 @@ describe("PATCH /api/reply/options/[id] validation", () => {
   it("rejects a blank edit", async () => {
     const res = await patch(VALID_ID, JSON.stringify({ editedText: "   " }));
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toContain("Write the edited reply first.");
+    expect((await res.json()).error).toContain("Hãy viết bản nháp đã sửa trước đã.");
   });
 });

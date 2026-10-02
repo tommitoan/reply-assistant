@@ -38,6 +38,6 @@ export async function POST(req: Request): Promise<Response> {
     return new Response(null, { status: 204 });
   } catch (err) {
     console.error("[/api/reply/warm]", err);
-    return Response.json({ error: "Could not warm the cache." }, { status: 502 });
+    return Response.json({ error: "Không làm nóng được bộ nhớ đệm." }, { status: 502 });
   }
 }

@@ -4,7 +4,7 @@ import { getDb } from "@/lib/reply/db";
 import { toStatsView } from "@/lib/reply/stats";
 import { createStatsRepo } from "@/lib/reply/stats-repo";
 
-export const metadata: Metadata = { title: "Reply stats — Reply Assistant" };
+export const metadata: Metadata = { title: "Thống kê — Reply Assistant" };
 // The figures change with every request.
 export const dynamic = "force-dynamic";
 
@@ -19,20 +19,20 @@ export default async function ReplyStatsPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
-        <h1 className="font-serif text-3xl tracking-tight text-stone-900 dark:text-stone-100">Reply stats</h1>
+        <h1 className="font-serif text-3xl tracking-tight text-stone-900 dark:text-stone-100">Thống kê</h1>
         <a
           href="/api/reply/export"
           download
           className="rounded-md border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-800"
         >
-          ⬇ Export examples (JSONL)
+          ⬇ Xuất ví dụ (JSONL)
         </a>
       </div>
       {stats ? (
         <StatsView stats={stats} />
       ) : (
         <p role="alert" className="text-sm text-red-600 dark:text-red-400">
-          Could not load the stats. Check the database connection and try again.
+          Không tải được thống kê. Kiểm tra kết nối cơ sở dữ liệu rồi thử lại.
         </p>
       )}
     </main>

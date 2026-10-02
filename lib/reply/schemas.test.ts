@@ -70,7 +70,7 @@ describe("generateBodySchema", () => {
   it("rejects blank input with a readable message", () => {
     const result = generateBodySchema.safeParse({ ...VALID, input: "   " });
     expect(result.success).toBe(false);
-    if (!result.success) expect(firstIssueMessage(result.error)).toBe("input: Write what you want to say first.");
+    if (!result.success) expect(firstIssueMessage(result.error)).toBe("Hãy viết điều bạn muốn nói trước đã.");
   });
 
   it("accepts input at the limit and rejects it one character over", () => {
@@ -93,7 +93,7 @@ describe("generateBodySchema", () => {
       const result = generateBodySchema.safeParse({ ...VALID, mode: "en_reply" });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(firstIssueMessage(result.error)).toBe("conversationId: Choose or start a conversation first.");
+        expect(firstIssueMessage(result.error)).toBe("Hãy chọn hoặc tạo một cuộc trò chuyện trước đã.");
       }
     });
 
@@ -147,7 +147,7 @@ describe("optionPatchSchema", () => {
   it("rejects a body with nothing to update", () => {
     const result = optionPatchSchema.safeParse({});
     expect(result.success).toBe(false);
-    if (!result.success) expect(firstIssueMessage(result.error)).toBe("Nothing to update.");
+    if (!result.success) expect(firstIssueMessage(result.error)).toBe("Không có gì để cập nhật.");
   });
 
   it("rejects an unknown rating and a non-boolean chosen", () => {
@@ -158,7 +158,7 @@ describe("optionPatchSchema", () => {
   it("rejects a blank edit and an edit over the length limit", () => {
     const blank = optionPatchSchema.safeParse({ editedText: "   " });
     expect(blank.success).toBe(false);
-    if (!blank.success) expect(firstIssueMessage(blank.error)).toContain("Write the edited reply first.");
+    if (!blank.success) expect(firstIssueMessage(blank.error)).toContain("Hãy viết bản nháp đã sửa trước đã.");
     expect(optionPatchSchema.safeParse({ editedText: "a".repeat(4000) }).success).toBe(true);
     expect(optionPatchSchema.safeParse({ editedText: "a".repeat(4001) }).success).toBe(false);
   });
@@ -212,7 +212,7 @@ describe("conversationPatchSchema", () => {
   it("rejects an empty update and bad values", () => {
     const empty = conversationPatchSchema.safeParse({});
     expect(empty.success).toBe(false);
-    if (!empty.success) expect(firstIssueMessage(empty.error)).toBe("Nothing to update.");
+    if (!empty.success) expect(firstIssueMessage(empty.error)).toBe("Không có gì để cập nhật.");
     expect(conversationPatchSchema.safeParse({ context: "family" }).success).toBe(false);
     expect(conversationPatchSchema.safeParse({ archived: "yes" }).success).toBe(false);
   });
@@ -251,7 +251,7 @@ describe("refineBodySchema", () => {
   it("needs a direction of some kind", () => {
     const result = refineBodySchema.safeParse(body({}));
     expect(result.success).toBe(false);
-    if (!result.success) expect(firstIssueMessage(result.error)).toBe("refine.instruction: Say how to develop it, or choose a quick direction.");
+    if (!result.success) expect(firstIssueMessage(result.error)).toBe("Hãy nói bạn muốn mở rộng theo hướng nào, hoặc chọn một hướng gợi ý.");
     expect(refineBodySchema.safeParse(body({ instruction: "   " })).success).toBe(false);
   });
 
@@ -325,7 +325,7 @@ describe("noteInputSchema", () => {
   it("refuses to pin a private note, with a clear message", () => {
     const result = noteInputSchema.safeParse({ text: "a", private: true, pinned: true });
     expect(result.success).toBe(false);
-    if (!result.success) expect(firstIssueMessage(result.error)).toBe("pinned: A private note cannot be pinned: it is never used.");
+    if (!result.success) expect(firstIssueMessage(result.error)).toBe("Ghi chú riêng tư không thể ghim vì sẽ không bao giờ được dùng.");
   });
 
   it("ignores fields it does not know, such as a status or source a caller might send", () => {

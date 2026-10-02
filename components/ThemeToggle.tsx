@@ -46,8 +46,8 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={() => applyTheme(theme === "dark" ? "light" : "dark")}
-      aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-      title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      aria-label={theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+      title={theme === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
       className="fixed right-4 top-4 z-50 flex h-9 w-9 items-center justify-center rounded-full border border-stone-300 bg-white text-base shadow-sm transition hover:border-stone-400 dark:border-stone-700 dark:bg-stone-900 dark:hover:border-stone-600"
     >
       {theme === "dark" ? "☀️" : "🌙"}

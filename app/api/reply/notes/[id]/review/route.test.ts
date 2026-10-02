@@ -19,13 +19,13 @@ describe("/api/reply/notes/[id]/review validation", () => {
   it("rejects a body that is not JSON", async () => {
     const res = await call(ID, "{nope");
     expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: "Invalid JSON body." });
+    expect(await res.json()).toEqual({ error: "Dữ liệu gửi lên không hợp lệ." });
   });
 
   it("rejects an unknown decision and a private note that is pinned", async () => {
     expect((await call(ID, JSON.stringify({ decision: "archive" }))).status).toBe(400);
     const pinnedPrivate = await call(ID, JSON.stringify({ decision: "approve", changes: { private: true, pinned: true } }));
     expect(pinnedPrivate.status).toBe(400);
-    expect((await pinnedPrivate.json()).error).toContain("cannot be pinned");
+    expect((await pinnedPrivate.json()).error).toContain("không thể ghim");
   });
 });

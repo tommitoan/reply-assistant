@@ -17,6 +17,6 @@ export async function GET(req: Request): Promise<Response> {
     return Response.json({ generations });
   } catch (err) {
     console.error("[/api/reply/generations]", err);
-    return Response.json({ error: "Could not load recent replies." }, { status: 500 });
+    return Response.json({ error: "Không tải được danh sách gần đây." }, { status: 500 });
   }
 }

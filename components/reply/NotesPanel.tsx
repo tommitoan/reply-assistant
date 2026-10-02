@@ -38,7 +38,7 @@ export default function NotesPanel() {
         setLoadError(null);
       })
       .catch((err) => {
-        if (!cancelled) setLoadError(err instanceof Error ? err.message : "Could not load the notes.");
+        if (!cancelled) setLoadError(err instanceof Error ? err.message : "Không tải được ghi chú.");
       });
     return () => {
       cancelled = true;
@@ -54,7 +54,7 @@ export default function NotesPanel() {
       reload();
       return true;
     } catch (err) {
-      setProblem(err instanceof Error ? err.message : "Could not save that.");
+      setProblem(err instanceof Error ? err.message : "Không lưu được thay đổi này.");
       return false;
     }
   }
@@ -65,7 +65,7 @@ export default function NotesPanel() {
       await deleteNote(id);
       reload();
     } catch (err) {
-      setProblem(err instanceof Error ? err.message : "Could not delete that.");
+      setProblem(err instanceof Error ? err.message : "Không xóa được ghi chú này.");
     }
   }
 
@@ -74,10 +74,10 @@ export default function NotesPanel() {
     try {
       const deleted = await deleteAllNotes();
       setConfirmingAll(false);
-      setNotice(`Deleted ${deleted} ${deleted === 1 ? "note" : "notes"}.`);
+      setNotice(`Đã xóa ${deleted} ghi chú.`);
       reload();
     } catch (err) {
-      setProblem(err instanceof Error ? err.message : "Could not delete the notes.");
+      setProblem(err instanceof Error ? err.message : "Không xóa được ghi chú.");
     }
   }
 
@@ -94,45 +94,44 @@ export default function NotesPanel() {
       />
       <DiaryImport
         onSaved={(saved) => {
-          setNotice(`Saved ${saved.length} ${saved.length === 1 ? "note" : "notes"}.`);
+          setNotice(`Đã lưu ${saved.length} ghi chú.`);
           reload();
         }}
       />
 
-      <section aria-label="Your notes" className="space-y-3">
+      <section aria-label="Ghi chú của bạn" className="space-y-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-100">Your notes</h2>
+          <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-100">Ghi chú của bạn</h2>
           {counts && (
             <p className="text-xs text-stone-500 dark:text-stone-400">
-              {counts.active} active · {counts.pinned} pinned · {counts.private} private
-              {counts.archived > 0 ? ` · ${counts.archived} archived` : ""}
+              {counts.active} đang dùng · {counts.pinned} đã ghim · {counts.private} riêng tư
+              {counts.archived > 0 ? ` · ${counts.archived} đã lưu trữ` : ""}
             </p>
           )}
         </div>
 
         <p className="text-xs text-stone-500 dark:text-stone-400">
           <a href="/api/reply/notes/export" download className="underline">
-            ⬇ Export my notes (JSON)
+            ⬇ Xuất ghi chú của tôi (JSON)
           </a>{" "}
-          · private notes are not included
+          · không gồm ghi chú riêng tư
         </p>
 
         {counts && counts.unindexed > 0 && (
           <p className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
-            {counts.unindexed} {counts.unindexed === 1 ? "note is" : "notes are"} not searchable yet, because the embedding
-            service was unavailable when {counts.unindexed === 1 ? "it was" : "they were"} saved. Run{" "}
-            <code>scripts/reply-backfill-note-embeddings.ts</code>, or edit the note to try again.
+            {counts.unindexed} ghi chú chưa tìm kiếm được theo ý nghĩa, vì dịch vụ embedding bị lỗi lúc lưu. Hãy chạy{" "}
+            <code>scripts/reply-backfill-note-embeddings.ts</code>, hoặc sửa ghi chú để thử lại.
           </p>
         )}
 
-        <div role="group" aria-label="Filters" className="flex flex-wrap items-center gap-3 text-sm text-stone-700 dark:text-stone-200">
+        <div role="group" aria-label="Bộ lọc" className="flex flex-wrap items-center gap-3 text-sm text-stone-700 dark:text-stone-200">
           <select
             value={filters.scope}
             onChange={(e) => setFilters({ ...filters, scope: e.target.value as NoteScope | "" })}
-            aria-label="Filter by scope"
+            aria-label="Lọc theo phạm vi"
             className={SELECT}
           >
-            <option value="">Any scope</option>
+            <option value="">Mọi phạm vi</option>
             {NOTE_SCOPES.map((value) => (
               <option key={value} value={value}>
                 {SCOPE_LABELS[value]}
@@ -142,10 +141,10 @@ export default function NotesPanel() {
           <select
             value={filters.kind}
             onChange={(e) => setFilters({ ...filters, kind: e.target.value as NoteKind | "" })}
-            aria-label="Filter by kind"
+            aria-label="Lọc theo loại"
             className={SELECT}
           >
-            <option value="">Facts and events</option>
+            <option value="">Thông tin và sự kiện</option>
             {NOTE_KINDS.map((value) => (
               <option key={value} value={value}>
                 {KIND_LABELS[value]}
@@ -158,7 +157,7 @@ export default function NotesPanel() {
               checked={filters.pinnedOnly}
               onChange={(e) => setFilters({ ...filters, pinnedOnly: e.target.checked })}
             />
-            Pinned
+            Đã ghim
           </label>
           <label className="flex items-center gap-1.5">
             <input
@@ -166,7 +165,7 @@ export default function NotesPanel() {
               checked={filters.privateOnly}
               onChange={(e) => setFilters({ ...filters, privateOnly: e.target.checked })}
             />
-            Private
+            Riêng tư
           </label>
           <label className="flex items-center gap-1.5">
             <input
@@ -174,7 +173,7 @@ export default function NotesPanel() {
               checked={filters.showArchived}
               onChange={(e) => setFilters({ ...filters, showArchived: e.target.checked })}
             />
-            Show archived
+            Hiện ghi chú đã lưu trữ
           </label>
         </div>
 
@@ -196,7 +195,9 @@ export default function NotesPanel() {
 
         {notes !== null && notes.length === 0 && (
           <p className="text-sm text-stone-500 dark:text-stone-400">
-            {total === 0 ? "No notes yet. Add one above, or import a diary." : "No notes match these filters."}
+            {total === 0
+              ? "Chưa có ghi chú nào. Thêm một ghi chú ở trên (ví dụ: \"Mình làm backend engineer, chủ yếu viết Go.\"), hoặc nhập từ nhật ký."
+              : "Không có ghi chú nào khớp bộ lọc."}
           </p>
         )}
         <ul className="space-y-3">
@@ -210,21 +211,21 @@ export default function NotesPanel() {
         {total > 0 && (
           <div className="pt-2">
             {confirmingAll ? (
-              <p role="alertdialog" aria-label="Delete every note?" className={`${ERROR} flex flex-wrap items-center gap-2`}>
+              <p role="alertdialog" aria-label="Xóa tất cả ghi chú?" className={`${ERROR} flex flex-wrap items-center gap-2`}>
                 <span className="flex-1">
-                  Delete all {total} notes, including archived and private ones, and everything made from them? This cannot be
-                  undone.
+                  Xóa toàn bộ {total} ghi chú, kể cả ghi chú đã lưu trữ, ghi chú riêng tư và mọi thứ được tạo ra từ chúng? Không
+                  thể hoàn tác.
                 </span>
                 <button type="button" className={SMALL} onClick={removeAll}>
-                  Delete everything
+                  Xóa hết
                 </button>
                 <button type="button" className={SMALL} onClick={() => setConfirmingAll(false)}>
-                  Keep my notes
+                  Giữ lại ghi chú
                 </button>
               </p>
             ) : (
               <button type="button" className={BUTTON} onClick={() => setConfirmingAll(true)}>
-                Delete all notes…
+                Xóa tất cả ghi chú…
               </button>
             )}
           </div>

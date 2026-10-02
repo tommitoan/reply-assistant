@@ -73,11 +73,11 @@ export async function createNotes(
 ): Promise<NotesResult<NoteRecord[]>> {
   const counts = await deps.repo.counts();
   if (counts.active + counts.archived + inputs.length > MAX_NOTES) {
-    return fail(400, `You can keep at most ${MAX_NOTES} notes. Delete or archive some first.`);
+    return fail(400, `Bạn chỉ giữ được tối đa ${MAX_NOTES} ghi chú. Hãy xóa hoặc lưu trữ bớt trước.`);
   }
   const newPins = inputs.filter((input) => input.pinned && !input.private).length;
   if (counts.pinned + newPins > MAX_PINNED_NOTES) {
-    return fail(400, `At most ${MAX_PINNED_NOTES} notes can be pinned.`);
+    return fail(400, `Chỉ ghim được tối đa ${MAX_PINNED_NOTES} ghi chú.`);
   }
 
   // English versions: the writer's own wins; the model only fills a gap, and
@@ -131,17 +131,17 @@ export async function updateNote(
   patch: NotePatch,
 ): Promise<NotesResult<NoteRecord>> {
   const current = await deps.repo.get(id);
-  if (!current) return fail(404, "That note was not found.");
+  if (!current) return fail(404, "Không tìm thấy ghi chú này.");
 
   const isPrivate = patch.private ?? current.private;
   if (isPrivate && patch.pinned === true) {
-    return fail(400, "A private note cannot be pinned: it is never used.");
+    return fail(400, "Ghi chú riêng tư không thể ghim vì sẽ không bao giờ được dùng.");
   }
   const status = patch.status ?? current.status;
   // A private or archived note is never in a prompt, so it is not pinned.
   const pinned = isPrivate || status === "archived" ? false : (patch.pinned ?? current.pinned);
   if (pinned && !current.pinned && (await deps.repo.counts()).pinned >= MAX_PINNED_NOTES) {
-    return fail(400, `At most ${MAX_PINNED_NOTES} notes can be pinned.`);
+    return fail(400, `Chỉ ghim được tối đa ${MAX_PINNED_NOTES} ghi chú.`);
   }
 
   const kind = patch.kind ?? current.kind;
@@ -182,7 +182,7 @@ export async function updateNote(
   }
 
   const updated = await deps.repo.update(id, changes);
-  if (!updated) return fail(404, "That note was not found.");
+  if (!updated) return fail(404, "Không tìm thấy ghi chú này.");
   // The wording of a note that is now private must not stay behind in the stored
   // direction of a reply that was developed with it.
   if (isPrivate && !current.private) await deps.repo.scrubDirections([id]);
@@ -198,16 +198,16 @@ export async function reviewSuggestion(
   review: SuggestionReview,
 ): Promise<NotesResult<NoteRecord>> {
   const current = await deps.repo.get(id);
-  if (!current || current.status !== "suggested") return fail(404, "That suggestion was not found.");
+  if (!current || current.status !== "suggested") return fail(404, "Không tìm thấy ghi chú gợi ý này.");
 
   if (review.decision === "dismiss") {
     const dismissed = await deps.repo.update(id, { status: "dismissed", pinned: false });
-    return dismissed ? { ok: true, value: dismissed } : fail(404, "That suggestion was not found.");
+    return dismissed ? { ok: true, value: dismissed } : fail(404, "Không tìm thấy ghi chú gợi ý này.");
   }
 
   const counts = await deps.repo.counts();
   if (counts.active + counts.archived + 1 > MAX_NOTES) {
-    return fail(400, `You can keep at most ${MAX_NOTES} notes. Delete or archive some first.`);
+    return fail(400, `Bạn chỉ giữ được tối đa ${MAX_NOTES} ghi chú. Hãy xóa hoặc lưu trữ bớt trước.`);
   }
 
   const changes = review.changes ?? {};

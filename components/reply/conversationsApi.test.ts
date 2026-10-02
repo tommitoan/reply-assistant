@@ -63,16 +63,16 @@ describe("conversationsApi", () => {
 
   it("explains an expired session", async () => {
     fetchMock.mockResolvedValue(json({ error: "unauthorized" }, 401));
-    await expect(listConversations()).rejects.toThrow(/session expired/i);
+    await expect(listConversations()).rejects.toThrow(/phiên đăng nhập đã hết hạn/i);
   });
 
   it("uses a generic message when the error body cannot be read", async () => {
     fetchMock.mockResolvedValue({ ok: false, status: 500, json: async () => Promise.reject(new Error("x")) });
-    await expect(listConversations()).rejects.toThrow("Could not load the conversations.");
+    await expect(listConversations()).rejects.toThrow("Không tải được danh sách cuộc trò chuyện.");
   });
 
   it("reports a network failure in plain words", async () => {
     fetchMock.mockRejectedValue(new TypeError("offline"));
-    await expect(listConversations()).rejects.toThrow(/could not reach the server/i);
+    await expect(listConversations()).rejects.toThrow(/không kết nối được với máy chủ/i);
   });
 });

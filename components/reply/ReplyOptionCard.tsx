@@ -6,10 +6,10 @@ import { MAX_EDIT_CHARS } from "@/lib/reply/limits";
 import type { OptionRating, ReplyVariant } from "@/lib/reply/types";
 
 const LABELS: Record<ReplyVariant, string> = {
-  short: "Short",
-  medium: "Medium",
-  long: "Long",
-  alt: "Another way",
+  short: "Ngắn",
+  medium: "Vừa",
+  long: "Dài",
+  alt: "Cách khác",
 };
 
 export interface OptionActions {
@@ -107,7 +107,7 @@ export default function ReplyOptionCard({
           {heading}
           {shown?.editedText != null && (
             <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-stone-500 dark:bg-stone-700 dark:text-stone-300">
-              edited
+              đã sửa
             </span>
           )}
         </h3>
@@ -115,17 +115,17 @@ export default function ReplyOptionCard({
           type="button"
           onClick={copy}
           disabled={displayText.length === 0}
-          aria-label={`Copy the ${heading.toLowerCase()} reply`}
+          aria-label={`Sao chép bản nháp ${heading.toLowerCase()}`}
           className={SMALL_BUTTON}
         >
-          {copyState === "copied" ? "Copied ✓" : copyState === "failed" ? "Copy failed" : "Copy"}
+          {copyState === "copied" ? "Đã chép ✓" : copyState === "failed" ? "Chép không được" : "Sao chép"}
         </button>
       </header>
 
       {editing ? (
         <div className="space-y-2">
           <label htmlFor={editFieldId} className="sr-only">
-            Edit the {heading.toLowerCase()} reply
+            Sửa bản nháp {heading.toLowerCase()}
           </label>
           <textarea
             id={editFieldId}
@@ -143,14 +143,14 @@ export default function ReplyOptionCard({
               disabled={pending || draft.trim().length === 0}
               className={`${SMALL_BUTTON} ${ACTIVE_BUTTON}`}
             >
-              {pending ? "Saving…" : "Save"}
+              {pending ? "Đang lưu…" : "Lưu"}
             </button>
             <button type="button" onClick={() => setEditing(false)} disabled={pending} className={SMALL_BUTTON}>
-              Cancel
+              Hủy
             </button>
             {shown?.editedText != null && (
               <button type="button" onClick={resetEdit} disabled={pending} className={SMALL_BUTTON}>
-                Use original
+                Dùng bản gốc
               </button>
             )}
           </div>
@@ -174,7 +174,7 @@ export default function ReplyOptionCard({
             onClick={() => actions.onRate(shown.rating === "good" ? null : "good")}
             disabled={pending}
             aria-pressed={shown.rating === "good"}
-            aria-label="Good reply"
+            aria-label="Bản nháp hay"
             className={`${SMALL_BUTTON} ${shown.rating === "good" ? ACTIVE_BUTTON : ""}`}
           >
             👍
@@ -184,13 +184,13 @@ export default function ReplyOptionCard({
             onClick={() => actions.onRate(shown.rating === "bad" ? null : "bad")}
             disabled={pending}
             aria-pressed={shown.rating === "bad"}
-            aria-label="Not a good reply"
+            aria-label="Bản nháp chưa ổn"
             className={`${SMALL_BUTTON} ${shown.rating === "bad" ? ACTIVE_BUTTON : ""}`}
           >
             👎
           </button>
           <button type="button" onClick={startEdit} disabled={pending} className={SMALL_BUTTON}>
-            ✏️ Edit
+            ✏️ Sửa
           </button>
           <button
             type="button"
@@ -199,7 +199,7 @@ export default function ReplyOptionCard({
             aria-pressed={shown.chosen}
             className={`${SMALL_BUTTON} ${shown.chosen ? ACTIVE_BUTTON : ""}`}
           >
-            {shown.chosen ? "Used ✓" : "Use this"}
+            {shown.chosen ? "Đã dùng ✓" : "Dùng bản này"}
           </button>
           {extraAction}
         </div>
@@ -211,7 +211,7 @@ export default function ReplyOptionCard({
           className="mt-2 flex items-start justify-between gap-2 rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-400"
         >
           <span>{actions.item.error}</span>
-          <button type="button" onClick={actions.onDismissError} aria-label="Dismiss" className="font-semibold">
+          <button type="button" onClick={actions.onDismissError} aria-label="Đóng" className="font-semibold">
             ×
           </button>
         </p>

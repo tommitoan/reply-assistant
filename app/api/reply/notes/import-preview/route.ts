@@ -17,7 +17,7 @@ export async function POST(req: Request): Promise<Response> {
   try {
     payload = await req.json();
   } catch {
-    return jsonError("Invalid JSON body.", 400);
+    return jsonError("Dữ liệu gửi lên không hợp lệ.", 400);
   }
   const parsed = diaryImportSchema.safeParse(payload);
   if (!parsed.success) return jsonError(firstIssueMessage(parsed.error), 400);
@@ -27,18 +27,18 @@ export async function POST(req: Request): Promise<Response> {
     runtime = createNotesRuntime();
   } catch (err) {
     console.error("[/api/reply/notes/import-preview]", err);
-    return jsonError("The reply assistant is not configured on this server.", 503);
+    return jsonError("Reply Assistant chưa được cấu hình trên máy chủ này.", 503);
   }
 
   try {
     if (await runtime.overBudget()) {
-      return jsonError("The daily spending limit for replies is reached. It resets at 00:00 UTC.", 429);
+      return jsonError("Đã hết hạn mức chi tiêu trong ngày. Hạn mức được đặt lại lúc 00:00 UTC (7:00 sáng giờ Việt Nam).", 429);
     }
     const drafts = await splitDiary(runtime.ai, parsed.data.text);
-    if (!drafts) return jsonError("Could not split the diary. Try again, or add the notes one by one.", 502);
+    if (!drafts) return jsonError("Không tách được nhật ký. Hãy thử lại, hoặc thêm từng ghi chú một.", 502);
     return Response.json({ drafts });
   } catch (err) {
     console.error("[/api/reply/notes/import-preview]", err);
-    return jsonError("Could not split the diary. Try again.", 500);
+    return jsonError("Không tách được nhật ký. Hãy thử lại.", 500);
   }
 }

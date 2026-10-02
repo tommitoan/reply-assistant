@@ -14,7 +14,7 @@ describe("POST /api/reply/notes/batch validation", () => {
   it("needs at least one note", async () => {
     const res = await POST(post(JSON.stringify({ notes: [] })));
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toContain("Choose at least one note.");
+    expect((await res.json()).error).toContain("Hãy chọn ít nhất một ghi chú.");
   });
 
   it("limits how many notes are saved at once", async () => {

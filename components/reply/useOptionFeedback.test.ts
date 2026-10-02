@@ -88,7 +88,7 @@ describe("useOptionFeedback.save", () => {
     await act(async () => {
       await result.current.save("a", { chosen: true });
     });
-    expect(result.current.items.a.error).toMatch(/session expired/i);
+    expect(result.current.items.a.error).toMatch(/phiên đăng nhập đã hết hạn/i);
   });
 
   it("uses a generic message when the error body cannot be read", async () => {
@@ -97,7 +97,7 @@ describe("useOptionFeedback.save", () => {
     await act(async () => {
       await result.current.save("a", { chosen: true });
     });
-    expect(result.current.items.a.error).toBe("Could not save that. Try again.");
+    expect(result.current.items.a.error).toBe("Không lưu được. Bạn thử lại nhé.");
   });
 
   it("rolls back on a network failure", async () => {
@@ -107,7 +107,7 @@ describe("useOptionFeedback.save", () => {
       await result.current.save("a", { rating: "good" });
     });
     expect(result.current.items.a.shown.rating).toBeNull();
-    expect(result.current.items.a.error).toMatch(/connection/i);
+    expect(result.current.items.a.error).toMatch(/kết nối/i);
   });
 
   it("does not send a second request for the same option while one is in flight", async () => {

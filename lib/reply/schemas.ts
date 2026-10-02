@@ -22,7 +22,7 @@ export const generateBodySchema = z
     input: z
       .string()
       .transform((value) => value.trim())
-      .pipe(z.string().min(1, "Write what you want to say first.")),
+      .pipe(z.string().min(1, "Hãy viết điều bạn muốn nói trước đã.")),
     context: z.enum(["work", "casual"]),
     speed: z.enum(["auto", "fast", "smart"]).default("auto"),
     learn: z.boolean().default(true),
@@ -41,13 +41,13 @@ export const generateBodySchema = z
   .superRefine((body, ctx) => {
     const limit = body.mode === "en_reply" ? MAX_PASTE_CHARS : MAX_INPUT_CHARS;
     if (body.input.length > limit) {
-      ctx.addIssue({ code: "custom", path: ["input"], message: `Keep it under ${limit} characters.` });
+      ctx.addIssue({ code: "custom", path: ["input"], message: `Hãy giữ dưới ${limit} ký tự.` });
     }
     if (body.mode === "en_reply" && !body.conversationId) {
       ctx.addIssue({
         code: "custom",
         path: ["conversationId"],
-        message: "Choose or start a conversation first.",
+        message: "Hãy chọn hoặc tạo một cuộc trò chuyện trước đã.",
       });
     }
   });
@@ -59,15 +59,15 @@ export type GenerateBody = z.infer<typeof generateBodySchema>;
 export const refineBodySchema = z
   .object({
     refine: z.object({
-      optionId: z.uuid("That reply was not found."),
+      optionId: z.uuid("Không tìm thấy bản nháp này."),
       instruction: z
         .string()
         .transform((value) => value.trim())
-        .pipe(z.string().max(MAX_INSTRUCTION_CHARS, `Keep the direction under ${MAX_INSTRUCTION_CHARS} characters.`))
+        .pipe(z.string().max(MAX_INSTRUCTION_CHARS, `Hướng mở rộng cần ngắn hơn ${MAX_INSTRUCTION_CHARS} ký tự.`))
         .optional(),
       preset: z.enum(REFINE_PRESETS).optional(),
       // A saved note to take the detail from, instead of a typed one.
-      noteId: z.uuid("That note was not found.").optional(),
+      noteId: z.uuid("Không tìm thấy ghi chú này.").optional(),
     }),
     speed: z.enum(["auto", "fast", "smart"]).default("auto"),
     learn: z.boolean().default(true),
@@ -78,7 +78,7 @@ export const refineBodySchema = z
       ctx.addIssue({
         code: "custom",
         path: ["refine", "instruction"],
-        message: "Say how to develop it, or choose a quick direction.",
+        message: "Hãy nói bạn muốn mở rộng theo hướng nào, hoặc chọn một hướng gợi ý.",
       });
     }
     // The model must not invent a personal detail; the writer supplies it.
@@ -86,14 +86,14 @@ export const refineBodySchema = z
       ctx.addIssue({
         code: "custom",
         path: ["refine", "instruction"],
-        message: "Write the detail to add.",
+        message: "Hãy viết chi tiết muốn thêm vào.",
       });
     }
   });
 
 export type RefineBody = z.infer<typeof refineBodySchema>;
 
-export const optionIdSchema = z.uuid("That reply was not found.");
+export const optionIdSchema = z.uuid("Không tìm thấy bản nháp này.");
 
 export const optionPatchSchema = z
   .object({
@@ -105,8 +105,8 @@ export const optionPatchSchema = z
       .pipe(
         z
           .string()
-          .min(1, "Write the edited reply first.")
-          .max(MAX_EDIT_CHARS, `Keep it under ${MAX_EDIT_CHARS} characters.`),
+          .min(1, "Hãy viết bản nháp đã sửa trước đã.")
+          .max(MAX_EDIT_CHARS, `Hãy giữ dưới ${MAX_EDIT_CHARS} ký tự.`),
       )
       .nullable()
       .optional(),
@@ -114,7 +114,7 @@ export const optionPatchSchema = z
   })
   .refine(
     (patch) => patch.rating !== undefined || patch.editedText !== undefined || patch.chosen !== undefined,
-    "Nothing to update.",
+    "Không có gì để cập nhật.",
   );
 
 export type OptionPatch = z.infer<typeof optionPatchSchema>;
@@ -123,15 +123,20 @@ export const generationsLimitSchema = z.coerce.number().int().min(1).max(50).cat
 
 export function firstIssueMessage(error: z.ZodError): string {
   const issue = error.issues[0];
-  if (!issue) return "Invalid request.";
-  const where = issue.path.length > 0 ? `${issue.path.join(".")}: ` : "";
-  return `${where}${issue.message}`;
+  if (!issue) return "Yêu cầu không hợp lệ.";
+  // Field names are internal, so the message alone says what to fix. Zod's
+  // own wording for a malformed body is English and only reachable by a client
+  // that is not this UI, so it is replaced by a generic line.
+  if (issue.code === "invalid_type" || issue.code === "invalid_value" || issue.code === "unrecognized_keys") {
+    return "Yêu cầu không hợp lệ.";
+  }
+  return issue.message;
 }
 
 const titleSchema = z
   .string()
   .transform((value) => value.trim())
-  .pipe(z.string().max(MAX_TITLE_CHARS, `Keep the title under ${MAX_TITLE_CHARS} characters.`));
+  .pipe(z.string().max(MAX_TITLE_CHARS, `Tiêu đề cần ngắn hơn ${MAX_TITLE_CHARS} ký tự.`));
 
 export const conversationCreateSchema = z.object({
   title: titleSchema.default(""),
@@ -146,7 +151,7 @@ export const conversationPatchSchema = z
   })
   .refine(
     (patch) => patch.title !== undefined || patch.context !== undefined || patch.archived !== undefined,
-    "Nothing to update.",
+    "Không có gì để cập nhật.",
   );
 
 export type ConversationPatch = z.infer<typeof conversationPatchSchema>;
@@ -163,8 +168,8 @@ export const styleProfilePatchSchema = z.object({ activeId: z.uuid().nullable() 
 // The rules of one version, as edited by the writer (the whole list replaces the old one).
 export const styleRulesPatchSchema = z.object({
   rules: z
-    .array(z.string().max(MAX_RULE_CHARS, `Keep each rule under ${MAX_RULE_CHARS} characters.`))
-    .max(MAX_RULES, `Keep at most ${MAX_RULES} rules.`),
+    .array(z.string().max(MAX_RULE_CHARS, `Mỗi quy tắc cần ngắn hơn ${MAX_RULE_CHARS} ký tự.`))
+    .max(MAX_RULES, `Chỉ giữ tối đa ${MAX_RULES} quy tắc.`),
 });
 
 // ---- Personal notes
@@ -175,20 +180,20 @@ const noteTextSchema = z
   .pipe(
     z
       .string()
-      .min(1, "Write the note first.")
-      .max(MAX_NOTE_CHARS, `Keep a note under ${MAX_NOTE_CHARS} characters.`),
+      .min(1, "Hãy viết ghi chú trước đã.")
+      .max(MAX_NOTE_CHARS, `Mỗi ghi chú cần ngắn hơn ${MAX_NOTE_CHARS} ký tự.`),
   );
 
 // An empty English version means "none".
 const noteTextEnSchema = z
   .string()
   .transform((value) => value.trim())
-  .pipe(z.string().max(MAX_NOTE_EN_CHARS, `Keep the English version under ${MAX_NOTE_EN_CHARS} characters.`))
+  .pipe(z.string().max(MAX_NOTE_EN_CHARS, `Bản tiếng Anh cần ngắn hơn ${MAX_NOTE_EN_CHARS} ký tự.`))
   .transform((value) => (value === "" ? null : value));
 
 const noteDateSchema = z
   .string()
-  .refine(isRealDate, "Use a real date (YYYY-MM-DD).")
+  .refine(isRealDate, "Hãy nhập một ngày có thật (YYYY-MM-DD).")
   .nullable();
 
 const noteKindSchema = z.enum(NOTE_KINDS);
@@ -197,7 +202,7 @@ const noteScopeSchema = z.enum(NOTE_SCOPES);
 function refusePinnedPrivate(note: { private?: boolean; pinned?: boolean }, ctx: z.RefinementCtx): void {
   // A private note is never used, so pinning it would promise something false.
   if (note.private && note.pinned) {
-    ctx.addIssue({ code: "custom", path: ["pinned"], message: "A private note cannot be pinned: it is never used." });
+    ctx.addIssue({ code: "custom", path: ["pinned"], message: "Ghi chú riêng tư không thể ghim vì sẽ không bao giờ được dùng." });
   }
 }
 
@@ -218,8 +223,8 @@ export type NoteInput = z.infer<typeof noteInputSchema>;
 export const noteBatchSchema = z.object({
   notes: z
     .array(noteInputSchema)
-    .min(1, "Choose at least one note.")
-    .max(MAX_NOTES_PER_BATCH, `Save at most ${MAX_NOTES_PER_BATCH} notes at once.`),
+    .min(1, "Hãy chọn ít nhất một ghi chú.")
+    .max(MAX_NOTES_PER_BATCH, `Mỗi lần chỉ lưu tối đa ${MAX_NOTES_PER_BATCH} ghi chú.`),
 });
 
 export const notePatchSchema = z
@@ -235,7 +240,7 @@ export const notePatchSchema = z
     status: z.enum(["active", "archived"]).optional(),
   })
   .superRefine(refusePinnedPrivate)
-  .refine((patch) => Object.values(patch).some((value) => value !== undefined), "Nothing to update.");
+  .refine((patch) => Object.values(patch).some((value) => value !== undefined), "Không có gì để cập nhật.");
 
 export type NotePatch = z.infer<typeof notePatchSchema>;
 
@@ -268,8 +273,8 @@ export const diaryImportSchema = z.object({
     .pipe(
       z
         .string()
-        .min(1, "Paste the diary first.")
-        .max(MAX_DIARY_CHARS, `Keep the diary under ${MAX_DIARY_CHARS} characters. Split it in parts.`),
+        .min(1, "Hãy dán nhật ký vào trước đã.")
+        .max(MAX_DIARY_CHARS, `Nhật ký cần ngắn hơn ${MAX_DIARY_CHARS} ký tự. Hãy chia thành nhiều phần.`),
     ),
 });
 

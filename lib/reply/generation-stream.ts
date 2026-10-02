@@ -8,8 +8,8 @@ import type { Route } from "./router";
 import { parseOptions } from "./stream-parser";
 import type { NoteRef, ReplyOptionDraft, ReplyStreamEvent } from "./types";
 
-const REFUSAL_MESSAGE = "The model declined to write this one. Try again with ⚡ or 🎯.";
-const EMPTY_MESSAGE = "The model did not return any replies. Try again.";
+const REFUSAL_MESSAGE = "Mô hình không viết được câu này. Thử lại bằng ⚡ Nhanh hoặc 🎯 Kỹ lưỡng nhé.";
+const EMPTY_MESSAGE = "Mô hình không trả về bản nháp nào. Bạn thử lại nhé.";
 
 export type MetaEvent = Extract<ReplyStreamEvent, { t: "meta" }>;
 

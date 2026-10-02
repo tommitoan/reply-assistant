@@ -8,7 +8,7 @@ function formatSeconds(ms: number): string {
 }
 
 function formatCost(costUsd: number | null): string {
-  if (costUsd === null) return "cost n/a";
+  if (costUsd === null) return "chưa có giá";
   if (costUsd > 0 && costUsd < 0.001) return "<$0.001";
   return `$${costUsd.toFixed(3)}`;
 }
@@ -20,10 +20,10 @@ export interface MetaLineInput {
   costUsd: number | null;
 }
 
-// e.g. "haiku · first 0.8s · total 2.9s · $0.003"; the cost is an estimate.
+// e.g. "haiku · chữ đầu 0.8s · tổng 2.9s · $0.003"; the cost is an estimate.
 export function formatMetaLine({ model, firstTokenMs, totalMs, costUsd }: MetaLineInput): string {
   const parts = [shortModelName(model)];
-  if (firstTokenMs !== null) parts.push(`first ${formatSeconds(firstTokenMs)}`);
-  parts.push(`total ${formatSeconds(totalMs)}`, formatCost(costUsd));
+  if (firstTokenMs !== null) parts.push(`chữ đầu ${formatSeconds(firstTokenMs)}`);
+  parts.push(`tổng ${formatSeconds(totalMs)}`, formatCost(costUsd));
   return parts.join(" · ");
 }

@@ -18,13 +18,26 @@ import type { OptionFeedbackStore } from "./useOptionFeedback";
 import { useReplyStream } from "./useReplyStream";
 
 const PRESET_LABELS: Record<RefinePreset, string> = {
-  longer: "Longer",
-  ask_back: "Ask something back",
-  personal_detail: "Add a personal detail",
-  casual: "More casual",
+  longer: "Dài hơn",
+  ask_back: "Hỏi lại họ",
+  personal_detail: "Thêm chi tiết cá nhân",
+  casual: "Thân mật hơn",
 };
 
-const DEVELOPED_LABELS = { long: "Developed", alt: "Developed · another way" } as const;
+// A direction is stored with an English tag ("[ask back] ..."), which the style
+// profile and the export read; the writer sees it in Vietnamese.
+const STORED_TAGS: Record<string, string> = {
+  longer: PRESET_LABELS.longer,
+  "ask back": PRESET_LABELS.ask_back,
+  "personal detail": PRESET_LABELS.personal_detail,
+  casual: PRESET_LABELS.casual,
+};
+
+function directionForDisplay(instruction: string): string {
+  return instruction.replace(/^\[([a-z ]+)\]/, (whole, tag: string) => (STORED_TAGS[tag] ? `[${STORED_TAGS[tag]}]` : whole));
+}
+
+const DEVELOPED_LABELS = { long: "Đã mở rộng", alt: "Đã mở rộng · cách khác" } as const;
 
 const developedLabel = (variant: string): string =>
   variant === "alt" ? DEVELOPED_LABELS.alt : DEVELOPED_LABELS.long;
@@ -144,23 +157,23 @@ export default function DevelopableOption({
             type="button"
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
-            aria-label="Develop this reply"
+            aria-label="Mở rộng bản nháp này"
             className={`${SMALL_BUTTON} ${open ? ACTIVE_BUTTON : ""}`}
           >
-            🌱 Phát triển
+            🌱 Mở rộng
           </button>
         }
       />
 
       {suggestions.length > 0 && (
-        <div role="group" aria-label="Notes you could add" className="flex flex-wrap items-center gap-2 pl-1">
-          <span className="text-xs text-stone-500 dark:text-stone-400">💡 Add:</span>
+        <div role="group" aria-label="Ghi chú có thể thêm" className="flex flex-wrap items-center gap-2 pl-1">
+          <span className="text-xs text-stone-500 dark:text-stone-400">💡 Thêm:</span>
           {suggestions.map((note) => (
             <button
               key={note.id}
               type="button"
               disabled={streaming}
-              aria-label={`Add this note: ${note.text}`}
+              aria-label={`Thêm ghi chú này: ${note.text}`}
               title={note.text}
               onClick={() => addNote(note)}
               className={`${SMALL_BUTTON} max-w-full truncate ${added.has(note.id) ? "opacity-60" : ""}`}
@@ -174,12 +187,12 @@ export default function DevelopableOption({
 
       {open && (
         <section
-          aria-label="Develop this reply"
+          aria-label="Mở rộng bản nháp này"
           className="space-y-3 rounded-xl border border-stone-200 bg-stone-50 p-3 dark:border-stone-700 dark:bg-stone-900"
         >
           <div>
             <label htmlFor={fieldId} className="sr-only">
-              How to develop this reply, in Vietnamese
+              Mở rộng bản nháp này theo hướng nào (viết bằng tiếng Việt)
             </label>
             <textarea
               id={fieldId}
@@ -193,12 +206,12 @@ export default function DevelopableOption({
               }}
               maxLength={MAX_INSTRUCTION_CHARS}
               rows={2}
-              placeholder="Phát triển theo hướng nào? Ví dụ: thêm là mình cũng mới dọn nhà, hỏi họ ở tầng mấy"
+              placeholder="Mở rộng theo hướng nào? Ví dụ: thêm là mình cũng mới dọn nhà, hỏi họ ở tầng mấy"
               className="w-full resize-y rounded-lg border border-stone-300 bg-white p-3 text-[15px] leading-relaxed text-stone-800 outline-none focus:border-accent-400 focus:ring-2 focus:ring-accent-200 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:focus:ring-accent-900"
             />
           </div>
 
-          <div role="group" aria-label="Quick directions" className="flex flex-wrap gap-2">
+          <div role="group" aria-label="Hướng gợi ý" className="flex flex-wrap gap-2">
             {REFINE_PRESETS.map((value) => (
               <button
                 key={value}
@@ -215,7 +228,7 @@ export default function DevelopableOption({
 
           {needsDetail && (
             <p className="text-xs text-stone-500 dark:text-stone-400">
-              Write the detail to add, in the box above. It is never invented for you.
+              Hãy viết chi tiết muốn thêm vào ô phía trên. App sẽ không tự bịa chi tiết cho bạn.
             </p>
           )}
 
@@ -226,11 +239,11 @@ export default function DevelopableOption({
               disabled={!canSubmit}
               className={`${SMALL_BUTTON} ${ACTIVE_BUTTON}`}
             >
-              {streaming ? "Developing…" : "Develop"}
+              {streaming ? "Đang mở rộng…" : "Mở rộng"}
             </button>
             {streaming && (
               <button type="button" onClick={cancel} className={SMALL_BUTTON}>
-                Stop
+                Dừng
               </button>
             )}
           </div>
@@ -251,7 +264,7 @@ export default function DevelopableOption({
           {groups.map((group) => (
             <div key={group.generationId} className="space-y-2">
               {group.instruction && (
-                <p className="text-xs text-stone-500 dark:text-stone-400">🌱 {group.instruction}</p>
+                <p className="text-xs text-stone-500 dark:text-stone-400">🌱 {directionForDisplay(group.instruction)}</p>
               )}
               {group.options.map((created) => (
                 <ReplyOptionCard

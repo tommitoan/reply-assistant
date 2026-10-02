@@ -10,7 +10,7 @@ function apiError(status: number): Error {
 describe("describeClaudeError", () => {
   it("treats a user abort as a quiet cancel", () => {
     expect(describeClaudeError(new Anthropic.APIUserAbortError())).toEqual({
-      message: "Cancelled.",
+      message: "Đã hủy.",
       retryable: false,
     });
   });
@@ -38,7 +38,7 @@ describe("describeClaudeError", () => {
 
   it("gives a generic message for anything unrecognised", () => {
     expect(describeClaudeError("odd")).toEqual({
-      message: "Something went wrong while writing the replies.",
+      message: "Có lỗi khi viết các bản nháp.",
       retryable: false,
     });
   });

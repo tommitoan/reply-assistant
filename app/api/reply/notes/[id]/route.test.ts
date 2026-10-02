@@ -21,7 +21,7 @@ describe("/api/reply/notes/[id] validation", () => {
   it("rejects an empty patch", async () => {
     const res = await PATCH(patch("{}"), context(ID));
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe("Nothing to update.");
+    expect((await res.json()).error).toBe("Không có gì để cập nhật.");
   });
 
   it("rejects a status that belongs to the inbox", async () => {

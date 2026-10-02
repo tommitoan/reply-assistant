@@ -21,6 +21,6 @@ export async function GET(): Promise<Response> {
     });
   } catch (err) {
     console.error("[/api/reply/export]", err);
-    return Response.json({ error: "Could not build the export." }, { status: 500 });
+    return Response.json({ error: "Không tạo được tệp xuất." }, { status: 500 });
   }
 }

@@ -14,6 +14,6 @@ export async function GET(): Promise<Response> {
     return Response.json({ notes, count: notes.length });
   } catch (err) {
     console.error("[/api/reply/notes/inbox]", err);
-    return Response.json({ error: "Could not load the suggestions." }, { status: 500 });
+    return Response.json({ error: "Không tải được ghi chú gợi ý." }, { status: 500 });
   }
 }

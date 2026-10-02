@@ -1,17 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import type { ReplySettings } from "@/lib/reply/settings";
 import type { ReplyContext, ReplySpeed } from "@/lib/reply/types";
 
 const CONTEXTS: Array<{ value: ReplyContext; label: string }> = [
-  { value: "work", label: "💼 Work" },
-  { value: "casual", label: "☕ Casual" },
+  { value: "work", label: "💼 Công việc" },
+  { value: "casual", label: "☕ Thân mật" },
 ];
 
 const SPEEDS: Array<{ value: ReplySpeed; label: string; hint: string }> = [
-  { value: "auto", label: "Auto", hint: "Picks the model for you" },
-  { value: "fast", label: "⚡ Fast", hint: "Quickest answer" },
-  { value: "smart", label: "🎯 Smart", hint: "Slower, more careful" },
+  { value: "auto", label: "Tự động", hint: "Tự chọn mô hình giúp bạn" },
+  { value: "fast", label: "⚡ Nhanh", hint: "Trả lời nhanh nhất" },
+  { value: "smart", label: "🎯 Kỹ lưỡng", hint: "Chậm hơn nhưng cẩn thận hơn" },
 ];
 
 const ACTIVE = "border-accent-300 bg-accent-100 text-accent-900 dark:border-accent-700 dark:bg-accent-900/50 dark:text-accent-100";
@@ -62,70 +63,81 @@ export default function ReplyControls({
   // Only a pasted message has something to explain.
   showExplain?: boolean;
 }) {
+  const [optionsOpen, setOptionsOpen] = useState(false);
+
   return (
-    <div className="flex flex-col gap-2.5">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-      <div role="group" aria-label="Context" className="flex gap-1.5">
-        {CONTEXTS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            disabled={disabled}
-            aria-pressed={settings.context === option.value}
-            onClick={() => onChange({ context: option.value })}
-            className={`rounded-full border px-3 py-1 text-[13px] font-medium transition disabled:opacity-60 ${
-              settings.context === option.value ? ACTIVE : IDLE
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <div role="group" aria-label="Ngữ cảnh" className="flex gap-1.5">
+          {CONTEXTS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              disabled={disabled}
+              aria-pressed={settings.context === option.value}
+              onClick={() => onChange({ context: option.value })}
+              className={`whitespace-nowrap rounded-full border px-3 py-1 text-[13px] font-medium transition disabled:opacity-60 ${
+                settings.context === option.value ? ACTIVE : IDLE
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        <div role="group" aria-label="Tốc độ mô hình" className="flex gap-1.5">
+          {SPEEDS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              disabled={disabled}
+              title={option.hint}
+              aria-pressed={settings.speed === option.value}
+              onClick={() => onChange({ speed: option.value })}
+              className={`whitespace-nowrap rounded-full border px-3 py-1 text-[13px] font-medium transition disabled:opacity-60 ${
+                settings.speed === option.value ? ACTIVE : IDLE
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          aria-expanded={optionsOpen}
+          onClick={() => setOptionsOpen((open) => !open)}
+          className="whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] text-stone-500 transition hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-700"
+        >
+          ⚙ Tùy chọn {optionsOpen ? "▴" : "▾"}
+        </button>
       </div>
 
-      <div role="group" aria-label="Model speed" className="flex gap-1.5">
-        {SPEEDS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            disabled={disabled}
-            title={option.hint}
-            aria-pressed={settings.speed === option.value}
-            onClick={() => onChange({ speed: option.value })}
-            className={`rounded-full border px-3 py-1 text-[13px] font-medium transition disabled:opacity-60 ${
-              settings.speed === option.value ? ACTIVE : IDLE
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-
-      </div>
-
-      <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+      {/* Closed, the switches stay in the page but are hidden from view and from assistive tech. */}
+      <div className={optionsOpen ? "flex flex-wrap gap-x-4 gap-y-1.5" : "hidden"}>
         <Toggle
-          label="Learn"
+          label="Ghi nhớ để học"
           checked={settings.learn}
-          hint="Keep this turn so it can help future replies, and let the app suggest notes from what you type (one small extra model call)"
+          hint="Lưu lượt này để giúp các bản trả lời sau, và cho phép app gợi ý ghi chú từ những gì bạn gõ (thêm một lần gọi mô hình nhỏ)"
           onChange={(learn) => onChange({ learn })}
         />
         <Toggle
-          label="Use memory"
+          label="Dùng trí nhớ"
           checked={settings.useMemory}
-          hint="Reuse your past good and edited replies as examples"
+          hint="Dùng lại những bản trả lời bạn từng thích hoặc đã sửa làm ví dụ"
           onChange={(useMemory) => onChange({ useMemory })}
         />
         <Toggle
-          label="Use my notes"
+          label="Dùng ghi chú của tôi"
           checked={settings.useNotes}
-          hint="Use what you saved on the About me page: pinned notes, and notes that fit a pasted message"
+          hint="Dùng những gì bạn lưu ở trang Về tôi: ghi chú đã ghim và ghi chú hợp với tin nhắn đã dán"
           onChange={(useNotes) => onChange({ useNotes })}
         />
         {showExplain && (
           <Toggle
-            label="Explain in Vietnamese"
+            label="Giải thích bằng tiếng Việt"
             checked={settings.explain}
-            hint="Translate their message and explain the tone (one extra small model call)"
+            hint="Dịch tin nhắn của họ và giải thích giọng điệu (thêm một lần gọi mô hình nhỏ)"
             onChange={(explain) => onChange({ explain })}
           />
         )}

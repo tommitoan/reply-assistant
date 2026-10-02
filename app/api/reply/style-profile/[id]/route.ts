@@ -17,13 +17,13 @@ function jsonError(message: string, status: number): Response {
 // switched on: wording changed, rules deleted or added.
 export async function PATCH(req: Request, { params }: Context): Promise<Response> {
   const id = optionIdSchema.safeParse((await params).id);
-  if (!id.success) return jsonError("That style profile was not found.", 404);
+  if (!id.success) return jsonError("Không tìm thấy hồ sơ phong cách này.", 404);
 
   let payload: unknown;
   try {
     payload = await req.json();
   } catch {
-    return jsonError("Invalid JSON body.", 400);
+    return jsonError("Dữ liệu gửi lên không hợp lệ.", 400);
   }
   const parsed = styleRulesPatchSchema.safeParse(payload);
   if (!parsed.success) return jsonError(firstIssueMessage(parsed.error), 400);
@@ -35,6 +35,6 @@ export async function PATCH(req: Request, { params }: Context): Promise<Response
     return Response.json(await listStyleProfiles(repo, LIST_LIMIT));
   } catch (err) {
     console.error("[/api/reply/style-profile/[id]]", err);
-    return jsonError("Could not save that. Try again.", 500);
+    return jsonError("Không lưu được thay đổi này. Bạn thử lại nhé.", 500);
   }
 }

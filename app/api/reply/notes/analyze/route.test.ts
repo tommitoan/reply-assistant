@@ -13,6 +13,6 @@ describe("POST /api/reply/notes/analyze validation", () => {
   it("rejects an empty note before any model call", async () => {
     const res = await POST(post(JSON.stringify({ text: "   " })));
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toContain("Write the note first.");
+    expect((await res.json()).error).toContain("Hãy viết ghi chú trước đã.");
   });
 });

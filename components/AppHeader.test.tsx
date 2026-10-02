@@ -15,22 +15,22 @@ describe("AppHeader", () => {
     pathname.mockReturnValue("/about");
     render(<AppHeader />);
     expect(screen.getByRole("link", { name: /Reply Assistant/ })).toHaveAttribute("href", "/");
-    const pages = within(screen.getByRole("navigation", { name: "Pages" }));
+    const pages = within(screen.getByRole("navigation", { name: "Các trang" }));
     expect(pages.getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")])).toEqual([
-      ["Style", "/style"],
-      ["About me", "/about"],
-      ["Stats", "/stats"],
-      ["Usage", "/usage"],
+      ["Phong cách", "/style"],
+      ["Về tôi", "/about"],
+      ["Thống kê", "/stats"],
+      ["Chi phí", "/usage"],
     ]);
-    expect(pages.getByRole("link", { name: "About me" })).toHaveAttribute("aria-current", "page");
-    expect(pages.getByRole("link", { name: "Stats" })).not.toHaveAttribute("aria-current");
+    expect(pages.getByRole("link", { name: "Về tôi" })).toHaveAttribute("aria-current", "page");
+    expect(pages.getByRole("link", { name: "Thống kê" })).not.toHaveAttribute("aria-current");
   });
 
   it("links back to the assistant and signs out with a POST to the logout route", () => {
     pathname.mockReturnValue("/about");
     render(<AppHeader />);
     expect(screen.getByRole("link", { name: /Reply Assistant/ })).toHaveAttribute("href", "/");
-    const button = screen.getByRole("button", { name: "Sign out" });
+    const button = screen.getByRole("button", { name: "Đăng xuất" });
     const form = button.closest("form");
     expect(form).toHaveAttribute("action", "/api/auth/logout");
     expect(form).toHaveAttribute("method", "post");

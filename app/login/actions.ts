@@ -26,21 +26,21 @@ async function clientKey(): Promise<string> {
 // Function must check the session itself rather than rely on the proxy.
 export async function login(_previous: LoginState, formData: FormData): Promise<LoginState> {
   if (!isAuthConfigured()) {
-    return { error: "Login is not configured on this server." };
+    return { error: "Server này chưa được cấu hình đăng nhập." };
   }
 
   const key = await clientKey();
   const limit = loginGuard.check(key);
   if (!limit.allowed) {
     const minutes = Math.ceil(limit.retryAfterSeconds / 60);
-    return { error: `Too many attempts. Try again in ${minutes} min.` };
+    return { error: `Bạn đã thử quá nhiều lần. Hãy thử lại sau ${minutes} phút.` };
   }
 
   const { APP_PASSCODE, APP_SESSION_SECRET } = getAuthEnv();
   const submitted = formData.get("passcode");
   if (typeof submitted !== "string" || !(await passcodeMatches(submitted, APP_PASSCODE))) {
     loginGuard.recordFailure(key);
-    return { error: "Incorrect passcode." };
+    return { error: "Mật khẩu không đúng." };
   }
 
   loginGuard.recordSuccess(key);
