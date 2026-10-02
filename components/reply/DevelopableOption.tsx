@@ -194,7 +194,7 @@ export default function DevelopableOption({
               maxLength={MAX_INSTRUCTION_CHARS}
               rows={2}
               placeholder="Phát triển theo hướng nào? Ví dụ: thêm là mình cũng mới dọn nhà, hỏi họ ở tầng mấy"
-              className="w-full resize-y rounded-lg border border-stone-300 bg-white p-3 text-[15px] leading-relaxed text-stone-800 outline-none focus:border-stone-500 focus:ring-2 focus:ring-stone-200 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:focus:ring-stone-700"
+              className="w-full resize-y rounded-lg border border-stone-300 bg-white p-3 text-[15px] leading-relaxed text-stone-800 outline-none focus:border-accent-400 focus:ring-2 focus:ring-accent-200 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:focus:ring-accent-900"
             />
           </div>
 

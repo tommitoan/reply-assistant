@@ -2,7 +2,7 @@ import Link from "next/link";
 import { shortModelName } from "@/lib/reply/format";
 import { formatPercent, type Rate, type StatsView as Stats } from "@/lib/reply/stats";
 
-const CARD = "rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-800";
+const CARD = "rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-700 dark:bg-stone-800";
 const TH = "py-1.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400";
 const TD = "py-1.5 pr-4 text-sm text-stone-700 dark:text-stone-200";
 const NOTE = "text-xs text-stone-400 dark:text-stone-500";
@@ -57,7 +57,7 @@ export default function StatsView({ stats }: { stats: Stats }) {
 
       <p className={NOTE}>
         Costs here cover the replies still stored. Summaries, explanations, memory and every other call are in{" "}
-        <Link href="/reply/usage" className="underline">
+        <Link href="/usage" className="underline">
           Usage
         </Link>
         , by day, week, month and conversation.

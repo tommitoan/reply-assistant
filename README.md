@@ -7,10 +7,11 @@ Type what you want to say in Vietnamese, or paste an English conversation, and g
 It is a single-user app, built end to end as a showcase of practical LLM engineering: streaming, prompt caching, retrieval, privacy by construction, cost control and honest testing.
 
 <p align="center">
-  <img src="docs/screenshots/replies.jpg" alt="Four reply options for a pasted chat, with rating, edit, use and develop buttons" width="720">
+  <img src="docs/screenshots/home-light.jpg" alt="The home page in the light theme: a greeting, one rounded input card with settings inside, example ideas" width="400">
+  <img src="docs/screenshots/home-dark.jpg" alt="The same page in the dark theme" width="400">
 </p>
 
-> The screenshots use made-up demo data (`npm run seed:demo`).
+> The screenshots use made-up demo data (`npm run seed:demo`). The look is a warm, paper-like theme with one terracotta accent, a serif for what the assistant writes, and a light and a dark mode.
 
 ## What it does
 
@@ -28,8 +29,9 @@ It is a single-user app, built end to end as a showcase of practical LLM enginee
 | **Your data stays yours** | Passcode login, JSONL export of your replies, JSON export of your notes (private notes never included), delete for threads and a delete-all for notes. |
 
 <p align="center">
-  <img src="docs/screenshots/notes-inbox.jpg" alt="The About me page with a suggested note waiting for approval" width="360">
-  <img src="docs/screenshots/style-profile.jpg" alt="The style profile page with the rules in use" width="360">
+  <img src="docs/screenshots/replies.jpg" alt="Four reply options for a pasted chat, set in a serif, with rating, edit, use and develop buttons" width="260">
+  <img src="docs/screenshots/notes-inbox.jpg" alt="The About me page with a suggested note waiting for approval" width="260">
+  <img src="docs/screenshots/style-profile.jpg" alt="The style profile page with the rules in use" width="260">
 </p>
 
 ## How a request flows
@@ -112,7 +114,7 @@ Unit tests use fakes. The promises that matter are checked a second way, against
 ## Project layout
 
 ```
-app/                 pages (/reply, /reply/about, /style, /stats, /usage) and API routes
+app/                 pages (/, /about, /style, /stats, /usage) and API routes
 components/reply/    the UI
 lib/reply/           everything else: prompt, routing, streaming, memory, notes, style profile, usage
 lib/auth/            passcode session and login rate limiting

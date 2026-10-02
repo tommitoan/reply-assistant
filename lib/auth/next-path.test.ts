@@ -3,7 +3,7 @@ import { safeNextPath } from "./next-path";
 
 describe("safeNextPath", () => {
   it("keeps same-origin paths, including query strings", () => {
-    expect(safeNextPath("/reply")).toBe("/reply");
+    expect(safeNextPath("/about")).toBe("/about");
     expect(safeNextPath("/study?category=go")).toBe("/study?category=go");
   });
 

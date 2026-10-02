@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ConversationDetail, ReplyStreamEvent } from "@/lib/reply/types";
 import ReplyComposer from "./ReplyComposer";
 
@@ -87,6 +87,20 @@ describe("ReplyComposer outside a thread (Quick translate)", () => {
     expect(box()).toHaveAttribute("placeholder", expect.stringContaining("Bạn muốn nói gì"));
     expect(screen.getByText(/0 \/ 4000/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Write replies" })).toBeInTheDocument();
+  });
+
+  it("offers example ideas to start from; clicking one fills the box and the examples go away", () => {
+    setup(null);
+    const examples = within(screen.getByRole("group", { name: "Examples" }));
+    expect(examples.getAllByRole("button")).toHaveLength(4);
+    fireEvent.click(examples.getAllByRole("button")[2]);
+    expect(box().value).toContain("Cuối tuần này bạn rảnh không");
+    expect(screen.queryByRole("group", { name: "Examples" })).not.toBeInTheDocument();
+  });
+
+  it("shows no examples inside a thread where a chat is pasted", () => {
+    setup();
+    expect(screen.queryByRole("group", { name: "Examples" })).not.toBeInTheDocument();
   });
 
   it("sends a typed idea with no conversation", async () => {

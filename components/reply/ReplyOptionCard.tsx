@@ -23,9 +23,9 @@ export interface OptionActions {
 }
 
 export const SMALL_BUTTON =
-  "rounded-md border border-stone-300 px-2.5 py-1 text-xs font-medium text-stone-600 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-700";
+  "rounded-full border border-stone-300 px-3 py-1 text-xs font-medium text-stone-600 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-700";
 export const ACTIVE_BUTTON =
-  "border-stone-900 bg-stone-900 text-white hover:bg-stone-800 dark:border-stone-100 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-200";
+  "border-accent-300 bg-accent-100 text-accent-900 hover:bg-accent-200 dark:border-accent-700 dark:bg-accent-900/50 dark:text-accent-100 dark:hover:bg-accent-900";
 
 export default function ReplyOptionCard({
   variant,
@@ -101,9 +101,9 @@ export default function ReplyOptionCard({
   }
 
   return (
-    <article className="rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-800">
+    <article className="rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-700 dark:bg-stone-800">
       <header className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
+        <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-accent-700 dark:text-accent-400">
           {heading}
           {shown?.editedText != null && (
             <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-stone-500 dark:bg-stone-700 dark:text-stone-300">
@@ -134,7 +134,7 @@ export default function ReplyOptionCard({
             maxLength={MAX_EDIT_CHARS}
             rows={4}
             autoFocus
-            className="w-full resize-y rounded-lg border border-stone-300 bg-white p-3 text-[15px] leading-relaxed text-stone-800 outline-none focus:border-stone-500 focus:ring-2 focus:ring-stone-200 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:focus:ring-stone-700"
+            className="w-full resize-y rounded-lg border border-stone-300 bg-white p-3 text-[15px] leading-relaxed text-stone-800 outline-none focus:border-accent-400 focus:ring-2 focus:ring-accent-200 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:focus:ring-accent-900"
           />
           <div className="flex flex-wrap gap-2">
             <button
@@ -156,7 +156,7 @@ export default function ReplyOptionCard({
           </div>
         </div>
       ) : (
-        <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-stone-800 dark:text-stone-200">
+        <p className="whitespace-pre-wrap font-serif text-[17px] leading-[1.65] text-stone-800 dark:text-stone-100">
           {displayText}
           {streaming && (
             <span

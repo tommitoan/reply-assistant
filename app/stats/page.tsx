@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import StatsView from "@/components/reply/StatsView";
 import { getDb } from "@/lib/reply/db";
 import { toStatsView } from "@/lib/reply/stats";
@@ -14,18 +13,13 @@ export default async function ReplyStatsPage() {
   try {
     stats = toStatsView(await createStatsRepo(getDb()).load());
   } catch (err) {
-    console.error("[/reply/stats]", err);
+    console.error("[/stats]", err);
   }
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <nav className="mb-4 text-sm">
-        <Link href="/reply" className="text-stone-500 hover:underline dark:text-stone-400">
-          ← Reply Assistant
-        </Link>
-      </nav>
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">📊 Reply stats</h1>
+        <h1 className="font-serif text-3xl tracking-tight text-stone-900 dark:text-stone-100">Reply stats</h1>
         <a
           href="/api/reply/export"
           download

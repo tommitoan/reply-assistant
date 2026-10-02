@@ -57,7 +57,7 @@ describe("proxy", () => {
 
   it("lets a valid session through to pages and APIs", async () => {
     const token = await createSessionToken(SECRET);
-    for (const path of ["/reply", "/api/reply/generate"]) {
+    for (const path of ["/about", "/api/reply/generate"]) {
       const res = await proxy(request(path, token));
       expect(res.status).toBe(200);
       expect(res.headers.get("x-middleware-next")).toBe("1");
@@ -66,13 +66,13 @@ describe("proxy", () => {
 
   it("rejects a cookie signed with another secret", async () => {
     const token = await createSessionToken("y".repeat(40));
-    const res = await proxy(request("/reply", token));
+    const res = await proxy(request("/about", token));
     expect(res.status).toBe(307);
   });
 
   it("rejects an expired session", async () => {
     const token = await createSessionToken(SECRET, Date.now() - 2 * 86_400_000, 86_400);
-    const res = await proxy(request("/reply", token));
+    const res = await proxy(request("/about", token));
     expect(res.status).toBe(307);
   });
 });
@@ -87,7 +87,7 @@ describe("proxy matcher", () => {
   });
 
   it("covers pages and other API routes", () => {
-    for (const path of ["/", "/reply", "/login", "/api/score", "/api/reply/generate"]) {
+    for (const path of ["/", "/about", "/login", "/api/score", "/api/reply/generate"]) {
       expect(pattern.test(path)).toBe(true);
     }
   });

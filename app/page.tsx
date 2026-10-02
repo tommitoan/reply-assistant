@@ -1,6 +1,12 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import ReplyWorkspace from "@/components/reply/ReplyWorkspace";
 
-// The assistant is the whole app.
-export default function Home() {
-  redirect("/reply");
+export const metadata: Metadata = { title: "Reply Assistant" };
+
+export default function HomePage() {
+  return (
+    <main className="mx-auto max-w-5xl px-4 pb-16 pt-6">
+      <ReplyWorkspace />
+    </main>
+  );
 }

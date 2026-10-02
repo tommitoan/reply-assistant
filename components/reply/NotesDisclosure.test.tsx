@@ -56,7 +56,7 @@ describe("NotesDisclosure", () => {
 
   it("links to the note on the About me page", () => {
     show();
-    expect(screen.getByRole("link", { name: "Edit" })).toHaveAttribute("href", "/reply/about#note-n1");
+    expect(screen.getByRole("link", { name: "Edit" })).toHaveAttribute("href", "/about#note-n1");
   });
 
   it("archives a note from here, once", async () => {

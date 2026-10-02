@@ -60,15 +60,16 @@ export default function ReplyWorkspace() {
   }
 
   const activeTitle = detail ? detail.title || "Untitled conversation" : "Quick translate";
+  const greeting = activeId === null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+    <div className="grid gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
       <aside className="space-y-2">
         <button
           type="button"
           onClick={() => setDrawerOpen((open) => !open)}
           aria-expanded={drawerOpen}
-          className="flex w-full items-center justify-between rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 lg:hidden dark:border-stone-700 dark:text-stone-200"
+          className="flex w-full items-center justify-between rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 lg:hidden dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200"
         >
           <span className="truncate">💬 {activeTitle}</span>
           <span aria-hidden="true">{drawerOpen ? "▴" : "▾"}</span>
@@ -86,6 +87,23 @@ export default function ReplyWorkspace() {
       </aside>
 
       <div className="min-w-0 space-y-5">
+        {greeting && (
+          <div className="pb-2 pt-4 text-center sm:pt-8">
+            <p aria-hidden="true" className="text-3xl text-accent-600 dark:text-accent-500">
+              ✻
+            </p>
+            <h1 className="mt-2 font-serif text-3xl tracking-tight text-stone-900 sm:text-4xl dark:text-stone-50">
+              What would you like to say?
+            </h1>
+            <p className="mx-auto mt-2 max-w-xl text-[15px] text-stone-500 dark:text-stone-400">
+              Type your idea in Vietnamese, or open a conversation to paste an English chat. You get drafts in your own voice;
+              nothing is sent for you.
+            </p>
+          </div>
+        )}
+
+        {!greeting && <h1 className="sr-only">Reply Assistant</h1>}
+
         {actionError && !detail && (
           <p
             role="alert"

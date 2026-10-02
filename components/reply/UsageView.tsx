@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { formatUsd, type UsageSeriesRow, type UsageView as Usage } from "@/lib/reply/usage-report";
 
-const CARD = "rounded-xl border border-stone-200 bg-white p-4 shadow-sm dark:border-stone-800 dark:bg-stone-800";
+const CARD = "rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-700 dark:bg-stone-800";
 const TH = "py-1.5 pr-4 text-left text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400";
 const TD = "py-1.5 pr-4 text-sm text-stone-700 dark:text-stone-200";
 const NUM = "text-right tabular-nums";
@@ -152,7 +152,7 @@ export default function UsageView({ usage }: { usage: Usage }) {
 
       <p className={NOTE}>
         Costs are estimates from token counts and a price list kept in the code, not invoices.{" "}
-        <Link href="/reply/stats" className="underline">
+        <Link href="/stats" className="underline">
           Reply stats
         </Link>
       </p>

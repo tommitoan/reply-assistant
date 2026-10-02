@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import StyleProfilePanel from "@/components/reply/StyleProfilePanel";
 
 export const metadata: Metadata = { title: "Style profile — Reply Assistant" };
@@ -7,12 +6,7 @@ export const metadata: Metadata = { title: "Style profile — Reply Assistant" }
 export default function StyleProfilePage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <nav className="mb-4 text-sm">
-        <Link href="/reply" className="text-stone-500 hover:underline dark:text-stone-400">
-          ← Reply Assistant
-        </Link>
-      </nav>
-      <h1 className="mb-1 text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">🎨 Style profile</h1>
+      <h1 className="mb-1 font-serif text-3xl tracking-tight text-stone-900 dark:text-stone-100">Style profile</h1>
       <p className="mb-3 text-sm text-stone-500 dark:text-stone-400">
         A short list of voice rules the assistant learns from the replies you edit and rate. Build one, read it, and switch it on
         if it sounds like you.
