@@ -1,0 +1,26 @@
+# Local Postgres with pgvector for the Reply Assistant. Development only.
+# Credentials are read from the local `.env` (never committed); the host port
+# is 5433 so it does not clash with a Postgres already installed on 5432.
+name: reply-assistant-dev
+
+services:
+  reply-db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${REPLY_DB_USER:-reply}
+      POSTGRES_DB: ${REPLY_DB_NAME:-reply}
+      POSTGRES_PASSWORD: ${REPLY_DB_PASSWORD:?set REPLY_DB_PASSWORD in .env}
+    ports:
+      # Bound to loopback so the dev database is not reachable from the LAN.
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - reply-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  reply-pgdata:
