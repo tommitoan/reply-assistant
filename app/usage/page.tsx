@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import UsageView from "@/components/reply/UsageView";
 import { getDb } from "@/lib/reply/db";
 import { toUsageView } from "@/lib/reply/usage-report";
@@ -15,17 +14,12 @@ export default async function ReplyUsagePage() {
   try {
     usage = toUsageView(await createUsageRepo(getDb()).load(now), now);
   } catch (err) {
-    console.error("[/reply/usage]", err);
+    console.error("[/usage]", err);
   }
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
-      <nav className="mb-4 text-sm">
-        <Link href="/reply" className="text-stone-500 hover:underline dark:text-stone-400">
-          ← Reply Assistant
-        </Link>
-      </nav>
-      <h1 className="mb-6 text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">💰 Reply usage</h1>
+      <h1 className="mb-6 font-serif text-3xl tracking-tight text-stone-900 dark:text-stone-100">Reply usage</h1>
       {usage ? (
         <UsageView usage={usage} />
       ) : (

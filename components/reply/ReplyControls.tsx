@@ -14,7 +14,7 @@ const SPEEDS: Array<{ value: ReplySpeed; label: string; hint: string }> = [
   { value: "smart", label: "🎯 Smart", hint: "Slower, more careful" },
 ];
 
-const ACTIVE = "border-stone-900 bg-stone-900 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-stone-900";
+const ACTIVE = "border-accent-300 bg-accent-100 text-accent-900 dark:border-accent-700 dark:bg-accent-900/50 dark:text-accent-100";
 const IDLE =
   "border-stone-300 bg-white text-stone-600 hover:border-stone-400 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:border-stone-600";
 
@@ -34,7 +34,7 @@ function Toggle({
   return (
     <label
       title={hint}
-      className={`flex items-center gap-2 text-sm text-stone-600 dark:text-stone-300 ${
+      className={`flex items-center gap-1.5 text-[13px] text-stone-500 dark:text-stone-400 ${
         disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
       }`}
     >
@@ -43,7 +43,7 @@ function Toggle({
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 accent-stone-900 dark:accent-stone-100"
+        className="h-3.5 w-3.5 accent-accent-600 dark:accent-accent-500"
       />
       {label}
     </label>
@@ -63,8 +63,9 @@ export default function ReplyControls({
   showExplain?: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-      <div role="group" aria-label="Context" className="flex gap-2">
+    <div className="flex flex-col gap-2.5">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div role="group" aria-label="Context" className="flex gap-1.5">
         {CONTEXTS.map((option) => (
           <button
             key={option.value}
@@ -72,7 +73,7 @@ export default function ReplyControls({
             disabled={disabled}
             aria-pressed={settings.context === option.value}
             onClick={() => onChange({ context: option.value })}
-            className={`rounded-full border px-3.5 py-1 text-sm font-medium transition disabled:opacity-60 ${
+            className={`rounded-full border px-3 py-1 text-[13px] font-medium transition disabled:opacity-60 ${
               settings.context === option.value ? ACTIVE : IDLE
             }`}
           >
@@ -81,7 +82,7 @@ export default function ReplyControls({
         ))}
       </div>
 
-      <div role="group" aria-label="Model speed" className="flex gap-2">
+      <div role="group" aria-label="Model speed" className="flex gap-1.5">
         {SPEEDS.map((option) => (
           <button
             key={option.value}
@@ -90,7 +91,7 @@ export default function ReplyControls({
             title={option.hint}
             aria-pressed={settings.speed === option.value}
             onClick={() => onChange({ speed: option.value })}
-            className={`rounded-full border px-3.5 py-1 text-sm font-medium transition disabled:opacity-60 ${
+            className={`rounded-full border px-3 py-1 text-[13px] font-medium transition disabled:opacity-60 ${
               settings.speed === option.value ? ACTIVE : IDLE
             }`}
           >
@@ -99,7 +100,9 @@ export default function ReplyControls({
         ))}
       </div>
 
-      <div className="flex gap-4">
+      </div>
+
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5">
         <Toggle
           label="Learn"
           checked={settings.learn}

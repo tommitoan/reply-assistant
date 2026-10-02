@@ -12,7 +12,7 @@ describe("AboutLink", () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ notes: [], count: 3 })));
     render(<AboutLink />);
     const link = screen.getByRole("link", { name: /About me/ });
-    expect(link).toHaveAttribute("href", "/reply/about");
+    expect(link).toHaveAttribute("href", "/about");
     await waitFor(() => expect(link).toHaveTextContent("3 new"));
     expect(screen.getByLabelText("3 suggested notes waiting")).toBeInTheDocument();
   });
@@ -22,17 +22,17 @@ describe("AboutLink", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<AboutLink />);
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    expect(screen.getByRole("link", { name: "🧑 About me" })).not.toHaveTextContent("new");
+    expect(screen.getByRole("link", { name: "About me" })).not.toHaveTextContent("new");
 
     cleanup();
     vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 500 })));
     render(<AboutLink />);
-    expect(screen.getByRole("link", { name: "🧑 About me" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "About me" })).toBeInTheDocument();
 
     cleanup();
     vi.stubGlobal("fetch", vi.fn(async () => Promise.reject(new Error("offline"))));
     render(<AboutLink />);
-    expect(screen.getByRole("link", { name: "🧑 About me" })).not.toHaveTextContent("new");
+    expect(screen.getByRole("link", { name: "About me" })).not.toHaveTextContent("new");
   });
 
   it("uses the singular for one note", async () => {

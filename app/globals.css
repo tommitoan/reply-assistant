@@ -1,24 +1,89 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* A warm, paper-like look: off-white page and dark brown-grey in the dark theme,
+   one terracotta accent, serif text for what the assistant writes. */
 :root {
-  --background: #fafaf9;
-  --foreground: #1c1917;
+  --background: #faf9f5;
+  --foreground: #3d3a30;
 }
 
 .dark {
-  --background: #1c1917;
-  --foreground: #fafaf9;
+  --background: #262624;
+  --foreground: #ece9df;
+}
+
+@theme {
+  /* The neutral scale every component already uses, made warm. Light theme: 50 is
+     the page, 200-300 the borders, 800 the ink. Dark theme: 700 borders, 800 cards,
+     900 inset fields, 100-200 the text. */
+  --color-stone-50: #faf9f5;
+  --color-stone-100: #f3f1e8;
+  --color-stone-200: #e8e5d9;
+  --color-stone-300: #d8d4c4;
+  --color-stone-400: #a29e90;
+  --color-stone-500: #77746a;
+  --color-stone-600: #5a574e;
+  --color-stone-700: #44423b;
+  --color-stone-800: #30302d;
+  --color-stone-900: #232321;
+  --color-stone-950: #1a1918;
+
+  /* The accent (terracotta): primary buttons, selected chips, focus. */
+  --color-accent-50: #fbf1ec;
+  --color-accent-100: #f6e2d8;
+  --color-accent-200: #edc6b2;
+  --color-accent-300: #e4a687;
+  --color-accent-400: #dc8a67;
+  --color-accent-500: #d97757;
+  --color-accent-600: #c4623f;
+  --color-accent-700: #a24d32;
+  --color-accent-800: #823e2a;
+  --color-accent-900: #5e2d1f;
+  --color-accent-950: #3a1c13;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), ui-serif, Georgia, "Times New Roman", serif;
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+::selection {
+  background: var(--color-accent-200);
+  color: var(--color-stone-900);
+}
+
+.dark ::selection {
+  background: var(--color-accent-800);
+  color: var(--color-stone-50);
+}
+
+/* Keyboard focus is always visible, in the accent colour. */
+:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* Text fields draw their own ring; do not double it. */
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -19,10 +19,10 @@ tiếng Anh, app đưa ra vài phương án. App chỉ viết nháp — bạn t�
 - **Learn** tắt = request vẫn được lưu nhưng không dùng để học. **Use memory** bật = lấy các reply tốt
   trước đây làm ví dụ.
 - ⚡ Fast (Haiku) / 🎯 Smart (Sonnet) / Auto. Nút **Better** chạy lại bằng Smart.
-- `/reply/style`: tạo style profile từ feedback (cần ít nhất 5 reply đã sửa hoặc rate). Bản mới tạo
+- `/style`: tạo style profile từ feedback (cần ít nhất 5 reply đã sửa hoặc rate). Bản mới tạo
   ở trạng thái **tắt** — đọc từng quy tắc, **sửa lời, xóa hoặc thêm từng quy tắc** (**Edit rules**) rồi mới bật.
-  Bản đang bật không sửa được: tắt nó đi trước. Trang có sẵn đoạn "How it works" giải thích profile là gì. `/reply/stats`: tỉ lệ 👍, memory có giúp không,
-  tốc độ. `/reply/usage`: **tiền đã tiêu** hôm nay / tuần / tháng / tổng, theo ngày, tuần, tháng,
+  Bản đang bật không sửa được: tắt nó đi trước. Trang có sẵn đoạn "How it works" giải thích profile là gì. `/stats`: tỉ lệ 👍, memory có giúp không,
+  tốc độ. `/usage`: **tiền đã tiêu** hôm nay / tuần / tháng / tổng, theo ngày, tuần, tháng,
   theo loại lệnh gọi (viết reply, giải thích, tóm tắt, style profile, embedding, warm-up) và theo từng conversation.
   Đây là ước tính từ số token và bảng giá trong code, không phải hóa đơn; xóa conversation không làm mất chi phí đã ghi. **Export examples**: tải file JSONL các reply đã sửa hoặc được 👍.
 
@@ -33,9 +33,9 @@ mấy") và/hoặc bấm nút nhanh: **Longer**, **Ask something back**, **Add a
 App tạo **hai bản dài hơn** ngay dưới phương án gốc (phương án gốc giữ nguyên). "Add a personal detail" cần bạn
 gõ chi tiết: app không tự bịa chuyện đời bạn. Chỉ phát triển được bản gốc, không phát triển bản đã phát triển.
 **Use this** là loại trừ trong cả lượt: chọn một bản thì các bản khác (gốc và đã phát triển) bị bỏ chọn.
-Mỗi lần Develop là một request riêng, tính vào ngân sách ngày (loại "Developing replies" trong `/reply/usage`).
+Mỗi lần Develop là một request riêng, tính vào ngân sách ngày (loại "Developing replies" trong `/usage`).
 
-### 🧑 About me: ghi chú về bạn (`/reply/about`)
+### 🧑 About me: ghi chú về bạn (`/about`)
 
 Ghi chú ngắn về đời bạn (nghề, thói quen, chuyện mới xảy ra) để reply nhắc đúng chi tiết thật.
 
@@ -180,7 +180,7 @@ Bạn tự làm các bước này (assistant không chạy lệnh vào database 
 6. **Smoke test sau deploy**:
    - `/api/health` trả `{"status":"ok"}` mà không cần đăng nhập; mọi trang khác chuyển sang `/login`.
    - Đăng nhập → viết 1 reply: phương án hiện dần từng phần (nếu hiện một lần là stream bị đệm giữa chừng).
-   - Rate 👍 → mở `/reply/stats` thấy số tăng. **Sign out** (menu bên trái, hoặc **More** trên điện thoại) quay về `/login`.
+   - Rate 👍 → mở `/stats` thấy số tăng. **Sign out** (menu bên trái, hoặc **More** trên điện thoại) quay về `/login`.
 
 ### Voyage: có nên thêm thẻ thanh toán?
 

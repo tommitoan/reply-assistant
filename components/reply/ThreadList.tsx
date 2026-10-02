@@ -3,9 +3,9 @@
 import type { ConversationListItem } from "@/lib/reply/types";
 
 const ROW =
-  "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition";
-const ACTIVE = "bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900";
-const IDLE = "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800";
+  "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition";
+const ACTIVE = "bg-stone-200/70 text-stone-900 dark:bg-stone-800 dark:text-stone-50";
+const IDLE = "text-stone-600 hover:bg-stone-200/50 dark:text-stone-300 dark:hover:bg-stone-800/70";
 
 function relativeTime(iso: string): string {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -38,7 +38,7 @@ export default function ThreadList({
         type="button"
         onClick={onCreate}
         disabled={creating}
-        className="mb-2 w-full rounded-lg border border-dashed border-stone-300 px-3 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 disabled:opacity-50 dark:border-stone-600 dark:text-stone-300 dark:hover:bg-stone-800"
+        className="mb-3 w-full rounded-full border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-accent-300 hover:bg-accent-50 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:border-accent-700 dark:hover:bg-stone-700"
       >
         {creating ? "Starting…" : "＋ New conversation"}
       </button>

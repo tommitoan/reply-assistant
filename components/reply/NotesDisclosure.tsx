@@ -78,7 +78,7 @@ export default function NotesDisclosure({
             <button type="button" disabled={disabled} onClick={() => onLeaveOut(note.id)} className={SMALL}>
               Don’t use this one
             </button>
-            <a href={`/reply/about#note-${note.id}`} className={`${SMALL} inline-block`}>
+            <a href={`/about#note-${note.id}`} className={`${SMALL} inline-block`}>
               Edit
             </a>
             <button type="button" disabled={disabled || archived.has(note.id)} onClick={() => void archive(note.id)} className={SMALL}>

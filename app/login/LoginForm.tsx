@@ -27,7 +27,7 @@ export default function LoginForm({ next, configured }: { next: string; configur
           autoFocus
           required
           disabled={!configured || pending}
-          className="w-full rounded-xl border border-stone-300 bg-white p-3 text-[15px] text-stone-800 shadow-sm outline-none transition focus:border-stone-500 focus:ring-2 focus:ring-stone-200 disabled:opacity-60 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:focus:border-stone-500 dark:focus:ring-stone-700"
+          className="w-full rounded-xl border border-stone-300 bg-white p-3 text-[15px] text-stone-800 shadow-sm outline-none transition focus:border-accent-400 focus:ring-2 focus:ring-accent-200 disabled:opacity-60 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:focus:border-accent-500 dark:focus:ring-accent-900"
         />
       </div>
       {error && (
@@ -41,7 +41,7 @@ export default function LoginForm({ next, configured }: { next: string; configur
       <button
         type="submit"
         disabled={!configured || pending}
-        className="w-full rounded-xl bg-stone-900 px-6 py-3 font-medium text-white shadow-sm transition hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-300"
+        className="w-full rounded-xl bg-accent-600 px-6 py-3 font-medium text-white shadow-sm transition hover:bg-accent-700 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {pending ? "Checking…" : "Sign in"}
       </button>

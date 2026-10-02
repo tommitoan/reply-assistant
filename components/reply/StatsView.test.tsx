@@ -92,6 +92,6 @@ describe("StatsView", () => {
 describe("StatsView cost note", () => {
   it("points to the Usage page for the full spending", () => {
     render(<StatsView stats={toStatsView(RAW)} />);
-    expect(screen.getByRole("link", { name: "Usage" })).toHaveAttribute("href", "/reply/usage");
+    expect(screen.getByRole("link", { name: "Usage" })).toHaveAttribute("href", "/usage");
   });
 });

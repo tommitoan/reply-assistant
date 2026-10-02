@@ -72,7 +72,7 @@ Kiểm tra: trong SQL editor của Neon chạy `select tablename from pg_tables 
 ## 4. Kiểm tra
 
 - `https://<domain của bạn>/api/health` trả `{"status":"ok"}` mà không cần đăng nhập.
-- Địa chỉ khác (`/`, `/reply`) chuyển sang `/login`; API trả 401 khi chưa có phiên.
+- Mọi trang khác, kể cả trang chủ `/`, chuyển sang `/login`; API trả 401 khi chưa có phiên.
 - Đăng nhập bằng `APP_PASSCODE`. Viết một reply: các phương án phải hiện **dần từng phần**. Nếu hiện một lần cả cụm thì có thứ gì đó phía trước app đang buffer luồng.
 - Chấm 👍/👎 một reply, mở **Stats** và **Usage** (chi phí của lần gọi vừa rồi phải có mặt), rồi **Sign out**.
 

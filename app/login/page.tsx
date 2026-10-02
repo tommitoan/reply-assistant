@@ -18,12 +18,11 @@ export default async function LoginPage({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center px-4 py-10">
-      <h1 className="mb-1 text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-        Sign in
-      </h1>
-      <p className="mb-6 text-sm text-stone-500 dark:text-stone-400">
-        Enter the passcode to continue.
+      <p aria-hidden="true" className="text-center text-4xl text-accent-600 dark:text-accent-500">
+        ✻
       </p>
+      <h1 className="mt-3 text-center font-serif text-3xl tracking-tight text-stone-900 dark:text-stone-50">Reply Assistant</h1>
+      <p className="mb-8 mt-2 text-center text-sm text-stone-500 dark:text-stone-400">Enter the passcode to continue.</p>
       <LoginForm next={safeNextPath(next)} configured={isAuthConfigured()} />
     </main>
   );

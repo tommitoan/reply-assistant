@@ -72,7 +72,7 @@ To check, open Neon's SQL editor and run `select tablename from pg_tables where 
 ## 4. Check that it works
 
 - `https://<your domain>/api/health` answers `{"status":"ok"}` without logging in.
-- Any other address (`/`, `/reply`) redirects to `/login`; the API answers 401 without a session.
+- Every other page, including the home page `/`, redirects to `/login`; the API answers 401 without a session.
 - Sign in with `APP_PASSCODE`. Write one reply: the options should appear **progressively**. If they all appear at once, something in front of the app is buffering the stream.
 - Rate a reply, open **Stats** and **Usage** (the cost of your call should be there), then **Sign out**.
 
